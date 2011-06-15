@@ -68,7 +68,7 @@ function showPoolStatuses() {
 				if(isset($statuses[$serverName]['latency'])) {
 					$latency = $statuses[$serverName]['latency'];
 					if($latency < 1.0) {
-						$latency = "< 1s";
+						$latency = "&lt;1 s";
 					} else $latency = number_format($latency, 2).' s';
 				} else $latency = '<small>N/A</small>';
 
@@ -119,7 +119,7 @@ function showPoolStatuses() {
 		echo "<tr><td style=\"color: $textColor; background-color: $color;\">$status</td><td>$fAddress</td><td>$latency</td><td>$uptime</td></tr>\n";
 	}
 
-	echo "</tbody>\n</thead>\n</table>\n";
+	echo "</tbody>\n</table>\n";
 
 	if(isset($lastUpdated)) {
 		$delay = time() - $lastUpdated;
