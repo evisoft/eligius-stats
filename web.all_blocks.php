@@ -139,7 +139,7 @@ $address = array_pop($uri);
 
 if(!$address) $address = null;
 
-printHeader('Blocks found by the Eligius pool', 'Blocks found by the pool', $relative = '..', false);
+printHeader('Blocks found by the Eligius pool', 'Blocks found by the pool', $relative = '..');
 if($address !== null) {
 	echo "<h2>Showing shares and rewards of the address : ".htmlspecialchars($address)."</h2>";
 }
