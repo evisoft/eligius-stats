@@ -247,7 +247,7 @@ EOT;
 function showPoolHashRate() {
 	global $SERVERS;
 
-	echo "<h2>Hashrate</h2>\n<table id=\"pool_hashrate\">\n<thead>\n";
+	echo "<h2>Hashrate <small>(double-click to undo zoom)</small></h2>\n<table id=\"pool_hashrate\">\n<thead>\n";
 
 	$total = 0;
 	$rates = array();
