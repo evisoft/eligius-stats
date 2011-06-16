@@ -106,7 +106,7 @@ function showBalanceGraph($server, $address) {
 	$paidUri = '../'.DATA_RELATIVE_ROOT.'/'.T_BALANCE_ALREADY_PAID.'_'.$server.'_'.$address.DATA_SUFFIX;
 	$unpaidUri = '../'.DATA_RELATIVE_ROOT.'/'.T_BALANCE_UNPAID_REWARD.'_'.$server.'_'.$address.DATA_SUFFIX;
 	$currentUri = '../'.DATA_RELATIVE_ROOT.'/'.T_BALANCE_CURRENT_BLOCK.'_'.$server.'_'.$address.DATA_SUFFIX;
-	$ticks = makeTicks();
+	//$ticks = makeTicks();
 
 	echo "<div class=\"graph\">\n<div id=\"eligius_balance_errors\" class=\"errors\"></div>\n";
 	echo "<div id=\"eligius_balance\" style=\"width:700px;height:350px;\">You must enable Javascript to see the graph.</div>\n</div>\n";
@@ -115,9 +115,10 @@ function showBalanceGraph($server, $address) {
 	echo <<<EOT
 var options = {
 	legend: { position: "nw" },
-	xaxis: { mode: "time", ticks: $ticks },
+	xaxis: { mode: "time", ticks: 5 },
 	yaxis: { position: "right", tickFormatter: EligiusUtils.formatBTC },
-	series: { lines: { fill: 0.3, steps: true }, stack: true }
+	series: { lines: { fill: 0.3, steps: true }, stack: true },
+	selection: { mode: "xy" }
 };
 
 $.get("$paidUri", "", function(data, textStatus, xhr) {
@@ -140,6 +141,25 @@ $.get("$paidUri", "", function(data, textStatus, xhr) {
 
 			series.push({ data: EligiusUtils.splitHorizontalLine(EligiusUtils.shiftData(alreadyPaid, 1.0)), label: "Payout threshold", color: "#FF0000", lines: { fill: false }, stack: false });
 			$.plot($('#eligius_balance'), series, options);
+
+			var maxZoomT = 600000;
+			var maxZoomY = 0.05;
+			$("#eligius_balance").bind("plotselected", function (event, ranges) {
+				if (ranges.xaxis.to - ranges.xaxis.from < maxZoomT)
+					ranges.xaxis.to = ranges.xaxis.from + maxZoomT;
+				if (ranges.yaxis.to - ranges.yaxis.from < maxZoomY)
+					ranges.yaxis.to = ranges.yaxis.from + maxZoomY;
+
+				plot = $.plot($("#eligius_balance"), series,
+					$.extend(true, {}, options, {
+						xaxis: { min: ranges.xaxis.from, max: ranges.xaxis.to },
+						yaxis: { min: ranges.yaxis.from, max: ranges.yaxis.to }
+				}));
+			});
+		
+			$("#eligius_balance").dblclick(function() {
+				$.plot($('#eligius_balance'), series, options);
+			});
 		}, "json").error(function() {
 			$('#eligius_balance_errors').append('<p>An error happened while loading the "current block estimate" data.<br />Try reloading the page.</p>');
 		});
@@ -218,7 +238,7 @@ function showRecentPayouts($server, $address) {
 
 function showHashRateGraph($server, $address) {
 	$uri = '../'.DATA_RELATIVE_ROOT.'/'.T_HASHRATE_INDIVIDUAL.'_'.$server.'_'.$address.DATA_SUFFIX;
-	$ticks = makeTicks();
+	//$ticks = makeTicks();
 	$interval = HASHRATE_PERIOD * 1000;
 
 	echo "<div class=\"graph\">\n<div id=\"eligius_indiv_hashrate_errors\" class=\"errors\"></div>\n";
@@ -228,9 +248,10 @@ function showHashRateGraph($server, $address) {
 	echo <<<EOT
 var options = {
 	legend: { position: "nw" },
-	xaxis: { mode: "time", ticks: $ticks },
+	xaxis: { mode: "time", ticks: 5 },
 	yaxis: { position: "right", tickFormatter: EligiusUtils.formatHashrate },
-	series: { lines: { fill: 0.3 } }
+	series: { lines: { fill: 0.3 } },
+	selection: { mode: "xy" }
 };
 
 $.get("$uri", "", function(data, textStatus, xhr) {
@@ -238,6 +259,25 @@ $.get("$uri", "", function(data, textStatus, xhr) {
 	series.push({ data: EligiusUtils.movingAverage(data, 10800000, $interval), label: "3-hour average", color: "#00AC6B", lines: { fill: false } });
 	series.push({ data: EligiusUtils.movingAverage(data, 43200000, $interval), label: "12-hour average", color: "#007046", lines: { fill: false } });
 	$.plot($('#eligius_indiv_hashrate'), series, options);
+
+	var maxZoomT = 600000;
+	var maxZoomY = 10e6;
+	$("#eligius_indiv_hashrate").bind("plotselected", function (event, ranges) {
+		if (ranges.xaxis.to - ranges.xaxis.from < maxZoomT)
+			ranges.xaxis.to = ranges.xaxis.from + maxZoomT;
+		if (ranges.yaxis.to - ranges.yaxis.from < maxZoomY)
+			ranges.yaxis.to = ranges.yaxis.from + maxZoomY;
+
+		plot = $.plot($("#eligius_indiv_hashrate"), series,
+			$.extend(true, {}, options, {
+				xaxis: { min: ranges.xaxis.from, max: ranges.xaxis.to },
+				yaxis: { min: ranges.yaxis.from, max: ranges.yaxis.to }
+		}));
+	});
+
+	$("#eligius_indiv_hashrate").dblclick(function() {
+		$.plot($('#eligius_indiv_hashrate'), series, options);
+	});
 }, "json").error(function() {
 	$('#eligius_indiv_hashrate_errors').append('<p>An error happened while loading the hashrate data.<br />Try reloading the page.</p>');
 });
@@ -288,7 +328,7 @@ EOT;
 } else {
 	showBalance($unpaid, $current);
 	showHashrateAverage($server, $address);
-	echo "<h2>Graphs</h2>\n";
+	echo "<h2>Graphs <small>(double-click to undo zoom)</small></h2>\n";
 	showBalanceGraph($server, $address);
 	showHashRateGraph($server, $address);
 	showRecentPayouts($server, $address);

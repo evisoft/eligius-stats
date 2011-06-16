@@ -345,6 +345,7 @@ EOT;
 <script type="text/javascript" src="$relativePathToRoot/flot/jquery.min.js"></script>
 <script type="text/javascript" src="$relativePathToRoot/flot/jquery.flot.min.js"></script>
 <script type="text/javascript" src="$relativePathToRoot/flot/jquery.flot.stack.min.js"></script>
+<script language="javascript" type="text/javascript" src="$relativePathToRoot/flot/jquery.flot.selection.min.js"></script>
 <script type="text/javascript" src="$relativePathToRoot/jquery-cookie/jquery.cookie.js"></script>
 
 EOT;

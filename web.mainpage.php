@@ -285,9 +285,10 @@ function showHashRateGraph() {
 	echo <<<EOT
 var options = {
 	legend: { position: "nw" },
-	xaxis: { mode: "time" },
+	xaxis: { mode: "time", ticks: 5 },
 	yaxis: { position: "right", min: 0, tickFormatter: EligiusUtils.formatHashrate },
-	series: { lines: { fill: 0.3 } }
+	series: { lines: { fill: 0.3 } },
+	selection: { mode: "xy" }
 };
 
 EOT;
@@ -300,6 +301,25 @@ EOT;
 $.get("$uri", "", function(data, textStatus, xhr) {
 	series.push({ data: data, label: "$prettyName", color: "$color" });
 	$.plot($('#eligius_pool_hashrate'), series, options);
+
+	var maxZoomT = 3 * 3600000;
+	var maxZoomY = 10e9;
+	$("#eligius_pool_hashrate").bind("plotselected", function (event, ranges) {
+		if (ranges.xaxis.to - ranges.xaxis.from < maxZoomT)
+			ranges.xaxis.to = ranges.xaxis.from + maxZoomT;
+		if (ranges.yaxis.to - ranges.yaxis.from < maxZoomY)
+			ranges.yaxis.to = ranges.yaxis.from + maxZoomY;
+
+		plot = $.plot($("#eligius_pool_hashrate"), series,
+			$.extend(true, {}, options, {
+				xaxis: { min: ranges.xaxis.from, max: ranges.xaxis.to },
+				yaxis: { min: ranges.yaxis.from, max: ranges.yaxis.to }
+		}));
+	});
+
+	$("#eligius_pool_hashrate").dblclick(function() {
+		$.plot($('#eligius_pool_hashrate'), series, options);
+	});
 }, "json").error(function() {
 	$('#eligius_pool_hashrate_errors').append('<p>An error happened while loading the data for the $prettyName server.<br />Try reloading the page.</p>');
 });
