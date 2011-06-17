@@ -47,6 +47,14 @@ body > table > thead > tr > th {
 	border-bottom:  1px solid black;
 }
 
+table > tbody > tr.bsep {
+	border-bottom: 1px solid black;
+}
+
+table > tbody > tr.tsep {
+	border-top: 1px solid black;
+}
+
 ul#top_contrib > li.rank1 > span,
 ul#top_contrib > li.rank2 > span,
 ul#top_contrib > li.rank3 > span {
@@ -95,13 +103,17 @@ td.warn {
 	background-color: #FF6700 !important;
 }
 
+td.unconfirmed {
+	background-color: #DDDDDD !important;
+}
+
 body > table#rfb > thead > tr > th, body > table > tbody > tr > td {
 	padding-top: 0.3em;
 	padding-bottom: 0.3em;
 }
 
 table#rfb_indiv {
-	width: 80em;
+	width: 90em;
 }
 
 table#rfb_all {

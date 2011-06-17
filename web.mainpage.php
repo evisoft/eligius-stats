@@ -169,14 +169,7 @@ function showRecentBlocks() {
 			$shares = ($r['shares_total'] !== null) ? prettyInt($r['shares_total']) : '<small>N/A</small>';
 			$server = $SERVERS[$r['server']][0];
 			$block = '<a href="http://blockexplorer.com/block/'.$r['hash'].'" title="'.$hash.'">…'.substr($hash, -25).'</a>';
-
-			if(isset($r['valid']) && $r['valid'] === true) {
-				$status = '<td>Valid</td>';
-			} else if(isset($r['valid']) && $r['valid'] === false) {
-				$status = '<td class="warn">Invalid</td>';
-			} else {
-				$status = '<td>Unconfirmed '.prettyTooltip('This block does not have got its 120 confirmations yet.').'</td>';
-			}
+			$status = prettyBlockStatus($r['valid']);
 
 			if(isset($r['duration'])) {
 				list($seconds, $minutes, $hours) = extractTime($r['duration']);

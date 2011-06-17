@@ -31,9 +31,9 @@ function showBlocks($address = null) {
 	echo "<th>Total shares</th>";
 	if($address !== null) {
 		echo "<th>Contribution (%)</th><th>Reward</th>";
-	} else {
-		echo "<th>Status</th>";
 	}
+
+	echo "<th>Status</th>";
 	echo "<th>Block</th></tr>\n</thead>\n<tbody>\n";
 
 	$success = true;
@@ -61,7 +61,7 @@ function showBlocks($address = null) {
 	}
 
 	if(!$success) {
-		echo "<tr><td><small>N/A</small></td><td colspan=\"3\"><small>N/A</small></td><td><small>N/A</small></td>";
+		echo "<tr><td><small>N/A</small></td><td colspan=\"3\"><small>N/A</small></td><td><small>N/A</small></td><td><small>N/A</small></td>";
 		if($address !== null) {
 			echo "<td><small>N/A</small></td><td><small>N/A</small></td><td><small>N/A</small></td>";
 		}
@@ -106,25 +106,15 @@ function showBlocks($address = null) {
 
 			if($address !== null) {
 				if(isset($r['valid']) && $r['valid'] === false) {
-					$reward = '<td class="warn">0 BTC '.prettyTooltip('Invalid block').'</td>';
-				} else if(isset($r['valid']) && $r['valid'] === true) {
-					$reward = '<td>'.(isset($r['rewards'][$address]) ? $r['rewards'][$address] : 0).' BTC</td>';
+					$reward = '<td>0 BTC</td>';
 				} else {
-					$reward = '<td>'.(isset($r['rewards'][$address]) ? $r['rewards'][$address] : 0).' BTC '.prettyTooltip('Unconfirmed block').'</td>';
+					$reward = '<td>'.(isset($r['rewards'][$address]) ? $r['rewards'][$address] : "0").' BTC</td>';
 				}
 
 				echo "<td class=\"ralign\">$percentage</td>$reward";
-			} else {
-				if(isset($r['valid']) && $r['valid'] === true) {
-					$status = '<td>Valid</td>';
-				} else if(isset($r['valid']) && $r['valid'] === false) {
-					$status = '<td class="warn">Invalid</td>';
-				} else {
-					$status = '<td>Unconfirmed '.prettyTooltip('This block does not have got its 120 confirmations yet.').'</td>';
-				}
-				echo $status;
 			}
 
+			echo prettyBlockStatus($r['valid']);
 			echo "<td class=\"lalign\">$block</td></tr>\n";
 		}
 	}

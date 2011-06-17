@@ -117,7 +117,7 @@ function updateBlock(&$block, $previousBlock = null) {
 		$block['valid'] = false;
 		return;
 	} else if(isset($lackOfConfirmations[$block['hash']])) {
-		$block['valid'] = null;
+		$block['valid'] = $lackOfConfirmations[$block['hash']];
 	} else {
 		$block['valid'] = true;
 	}

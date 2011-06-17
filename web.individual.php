@@ -62,25 +62,32 @@ function showHashrateAverage($server, $address) {
 		$rejectedSharesShortPercentage = number_format(100 * ($rejectedSharesShort) / ($rejectedSharesShort + $sharesShort), 2). ' %';
 		$rejectedSharesLongPercentage = number_format(100 * ($rejectedSharesLong) / ($rejectedSharesLong + $sharesLong), 2). ' %';
 
+		$reasons = array();
 		if(isset($averages_long['invalid'][$server][$address]) && $rejectedSharesLong > 0) {
-			$reasons = array();
 			foreach($averages_long['invalid'][$server][$address] as $reason => $count) {
-				$reasons[] = $reason.' : '.$count;
+				$reasons[$reason]['long'] = $count;
 			}
-			$longTooltip = prettyTooltip(implode(', ', $reasons));
-		} else $longTooltip = '';
-
+		}
 		if(isset($averages_short['invalid'][$server][$address]) && $rejectedSharesShort > 0) {
-			$reasons = array();
 			foreach($averages_short['invalid'][$server][$address] as $reason => $count) {
-				$reasons[] = $reason.' : '.$count;
-			} 
-			$shortTooltip = prettyTooltip(implode(', ', $reasons));
-		} else $shortTooltip = '';
+				$reasons[$reason]['short'] = $count;
+			}
+		}
+		if(count($reason) > 0) {
+			$rjClass = ' class="tsep" style="border-color: #888;"';
+		} else $rjClass = '';
 
 		echo "<tr><td>Hashrate</td><td$lClass><strong class=\"moremore\">$long</strong></td><td$sClass>$short</td></tr>\n";
-		echo "<tr><td>Submitted valid shares</td><td$lClass>$sharesLong</td><td$sClass>$sharesShort</td></tr>\n";
-		echo "<tr><td>Submitted invalid shares</td><td$lClass>$rejectedSharesLong $longTooltip ($rejectedSharesLongPercentage)</td><td$sClass>$rejectedSharesShort $shortTooltip ($rejectedSharesShortPercentage)</td></tr>\n";
+		echo "<tr class=\"bsep\"><td>Submitted valid shares</td><td$lClass>$sharesLong</td><td$sClass>$sharesShort</td></tr>\n";
+
+		foreach($reasons as $reason => $d) {
+			$S = isset($d['short']) ? prettyInt($d['short']) : 0;
+			$L = isset($d['long']) ? prettyInt($d['long']) : 0;
+			$reason = prettyInvalidReason($reason).'s';
+			echo "<tr><td>Submitted $reason</td><td>$L</td><td>$S</td></tr>\n";
+		}
+
+		echo "<tr$rjClass><td>Total submitted invalid shares</td><td>$rejectedSharesLong ($rejectedSharesLongPercentage)</td><td>$rejectedSharesShort ($rejectedSharesShortPercentage)</td></tr>\n";
 	}
 
 	echo "</tbody>\n</table>\n";
@@ -180,13 +187,13 @@ function showRecentPayouts($server, $address) {
 	echo "<h2>Recent blocks and rewards</h2>\n";
 	$now = time();
 
-	echo "<table id=\"rfb_indiv\">\n<thead>\n<tr><th>▼ When</th><th colspan=\"3\">Round duration</th><th>Submitted shares</th><th>Total shares</th><th>Contribution (%)</th><th>Reward</th><th>Block</th></tr>\n</thead>\n<tbody>\n";
+	echo "<table id=\"rfb_indiv\">\n<thead>\n<tr><th>▼ When</th><th colspan=\"3\">Round duration</th><th>Submitted shares</th><th>Total shares</th><th>Contribution (%)</th><th>Reward</th><th>Status</th><th>Block</th></tr>\n</thead>\n<tbody>\n";
 
 	$success = true;
 	$recent = cacheFetch('blocks_recent_'.$server, $success);
 
 	if(!$success) {
-		echo "<tr><td><small>N/A</small></td><td colspan=\"3\"><small>N/A</small></td><td><small>N/A</small></td><td><small>N/A</small></td><td><small>N/A</small></td><td><small>N/A</small></td></tr>\n";
+		echo "<tr><td><small>N/A</small></td><td colspan=\"3\"><small>N/A</small></td><td><small>N/A</small></td><td><small>N/A</small></td><td><small>N/A</small></td><td><small>N/A</small></td><td><small>N/A</small></td></tr>\n";
 	} else {
 		$cb = function($a, $b) { return $b['when'] - $a['when']; }; /* Sort in reverse order */
 		usort($recent, $cb);
@@ -211,12 +218,12 @@ function showRecentPayouts($server, $address) {
 			}
 			$block = '<a href="http://blockexplorer.com/block/'.$r['hash'].'" title="'.$hash.'">…'.substr($hash, -25).'</a>';
 
-			if(isset($r['valid']) && $r['valid'] === false) {
-				$reward = '<td class="warn">0 BTC '.prettyTooltip('Invalid block').'</td>';
-			} else if(isset($r['valid']) && $r['valid'] === true) {
-				$reward = '<td>'.(isset($r['rewards'][$address]) ? $r['rewards'][$address] : 0).' BTC</td>';
-			} else {
-				$reward = '<td>'.(isset($r['rewards'][$address]) ? $r['rewards'][$address] : 0).' BTC '.prettyTooltip('Unconfirmed block').'</td>';
+			if($address !== null) {
+				if(isset($r['valid']) && $r['valid'] === false) {
+					$reward = '<td>0 BTC</td>';
+				} else {
+					$reward = '<td>'.(isset($r['rewards'][$address]) ? $r['rewards'][$address] : "0").' BTC</td>';
+				}
 			}
 
 			if(isset($r['duration'])) {
@@ -226,7 +233,8 @@ function showRecentPayouts($server, $address) {
 				$duration = "<td colspan=\"3\"><small>N/A</small></td>";
 			}
 
-			echo "<tr class=\"row$a\"><td>$when</td>$duration<td class=\"ralign\">$myShares</td><td class=\"ralign\">$shares</td><td class=\"ralign\">$percentage</td>$reward<td class=\"ralign\">$block</td></tr>\n";
+			$status = prettyBlockStatus($r['valid']);
+			echo "<tr class=\"row$a\"><td>$when</td>$duration<td class=\"ralign\">$myShares</td><td class=\"ralign\">$shares</td><td class=\"ralign\">$percentage</td>$reward$status<td class=\"ralign\">$block</td></tr>\n";
 		}
 
 		$a = ($a + 1) % 2;

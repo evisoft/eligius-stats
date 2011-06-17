@@ -313,16 +313,6 @@ function extractTime($d) {
 }
 
 /**
- * Return the xHTML code for a "pretty" tooltip.
- * @param string $message the tooltip message
- * @return string a pretty tooltip "?" that hovers the message
- */
-function prettyTooltip($message) {
-	$message = htmlspecialchars($message);
-	return "<a href=\"javascript:void(0);\" title=\"$message\">?</a>";
-}
-
-/**
  * Print the basic xHTML header of a page.
  * @param string $title the title written in <title>
  * @param string $shownTitle the title written in <h1>
@@ -399,4 +389,27 @@ $more
 </html>
 
 EOT;
+}
+
+/**
+ * Format the name of an invalid share.
+ * @param string $reason the reason why the share was invalid.
+ * @return string formatted name
+ */
+function prettyInvalidReason($reason) {
+	if($reason == 'unknown-work') {
+		return 'unknown share';
+	} else return "$reason share";
+}
+
+function prettyBlockStatus($s) {
+	if($s === true) {
+		return '<td>Valid</td>';
+	} else if(isset($s) && $s === false) {
+		return '<td class="warn">Invalid</td>';
+	} else if(is_numeric($s)) {
+		return '<td class="unconfirmed" title="'.$s.' confirmations left (can be out of date)">Unconfirmed ('.$s.')</td>';
+	} else {
+		return '<td class="unconfirmed" title="Unknown status">Unknown</td>';
+	}
 }
