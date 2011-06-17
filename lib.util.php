@@ -398,10 +398,15 @@ EOT;
  */
 function prettyInvalidReason($reason) {
 	if($reason == 'unknown-work') {
-		return 'unknown share';
+		return 'corrupted share';
 	} else return "$reason share";
 }
 
+/**
+ * Format the status of a block.
+ * @param mixed $s the status of the block.
+ * @return string formatted block status.
+ */
 function prettyBlockStatus($s) {
 	if($s === true) {
 		return '<td>Valid</td>';
