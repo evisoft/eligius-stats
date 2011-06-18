@@ -413,7 +413,7 @@ function prettyBlockStatus($s) {
 	} else if(isset($s) && $s === false) {
 		return '<td class="warn">Invalid</td>';
 	} else if(is_numeric($s)) {
-		return '<td class="unconfirmed" title="'.$s.' confirmations left (can be out of date)">Unconfirmed ('.$s.')</td>';
+		return '<td class="unconfirmed" title="'.$s.' confirmations left">'.$s.' conf. left</td>';
 	} else {
 		return '<td class="unconfirmed" title="Unknown status">Unknown</td>';
 	}
