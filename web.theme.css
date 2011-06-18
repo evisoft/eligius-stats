@@ -73,12 +73,22 @@ table#top_contrib > tbody > tr.rank3 {
 	background-color: #CD7F32;
 }
 
-div.errors > p {
+div.errors > p, p.msg {
 	margin-top: 0;
 	padding: 0.5em;
 	width: 50em;
 	border: 2px solid red;
 	background-color: #FFCCCC;
+}
+
+p.msg {
+	margin-top: 1em;
+	width: 80em;
+}
+
+p.msg.message {
+	border-color: green;
+	background-color: #CCFFCC;
 }
 
 div.announcements {

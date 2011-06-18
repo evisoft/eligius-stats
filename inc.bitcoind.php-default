@@ -1,0 +1,6 @@
+<?php
+
+const BITCOIND_BIN = '/usr/bin/bitcoind';
+const BITCOIND_RPCUSER = 'XXX';
+const BITCOIND_RPCPASSWORD = 'XXX';
+const BITCOIND_DATADIR = '/home/XXX/.bitcoin';

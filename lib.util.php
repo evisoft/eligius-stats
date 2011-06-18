@@ -360,6 +360,13 @@ EligiusUtils.maybeHideAnnouncements();
 
 EOT;
 
+	if(!isset($_SESSION['_messages'])) return;
+	foreach($_SESSION['_messages'] as $m) {
+		list($type, $content) = $m;
+		echo "<p class=\"msg $type\">$content</p>\n";
+	}
+
+	$_SESSION['_messages'] = array();
 }
 
 /**
@@ -417,4 +424,22 @@ function prettyBlockStatus($s) {
 	} else {
 		return '<td class="unconfirmed" title="Unknown status">Unknown</td>';
 	}
+}
+
+/**
+ * Show an error in the next printed header.
+ * @param string $e error to display
+ * @return void
+ */
+function addError($e) {
+	$_SESSION['_messages'][] = array('error', $e);
+}
+
+/**
+ * Show a message in the next printed header.
+ * @param string $m message to display
+ * @return void
+ */
+function addMessage($m) {
+	$_SESSION['_messages'][] =  array('message', $m);
 }

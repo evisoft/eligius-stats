@@ -59,6 +59,8 @@ require __DIR__.'/lib.cache.php';
 require __DIR__.'/lib.bitcoind.php';
 require __DIR__.'/inc.sql.php';
 
+session_start();
+
 /**
  * Update the Pool's hashrate.
  * @param string $serverName the name of the server (should coincide with the "server" column in MySQL)
