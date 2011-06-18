@@ -57,6 +57,7 @@ const OLD_BLOCKS = 250;
 require __DIR__.'/lib.util.php';
 require __DIR__.'/lib.cache.php';
 require __DIR__.'/lib.bitcoind.php';
+require __DIR__.'/inc.sql.php';
 
 /**
  * Update the Pool's hashrate.
