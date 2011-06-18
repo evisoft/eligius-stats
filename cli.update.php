@@ -79,6 +79,14 @@ $commands = array(
 		return $r;
 	},
 
+	'block_metadata' => function() use($SERVERS) {
+		$r = true;
+		foreach($SERVERS as $serverName => $data) {
+			$r = $r && updateAllBlockMetadata($serverName);
+		}
+		return $r;
+	},
+
 	'top_contributors' => function() {
 		return updateTopContributors();
 	},

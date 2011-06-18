@@ -3,7 +3,13 @@ eligius-stats
 
 These scripts generate statistics (xHTML pages and graphes) about the Eligius pool available at http://eligius.st/~artefact2/.
 
-It requires PHP >= 5.3 with the curl extension, and Apache2 (other HTTPd may work too, if you rewrite the .htaccess yourself).
+It requires :
+
+* PHP >= 5.3 with the curl extension,
+* Apache2 (any other HTTPd may work too, if you rewrite the .htaccess yourself)
+* A local instance of bitcoind running with the following patches :
+	* https://github.com/khalahan/bitcoin/tree/signandverif
+	* https://github.com/jgarzik/bitcoin/tree/getblockbycount
 
 These scripts are distributed under the GNU Affero General Public License v3.
 
@@ -18,10 +24,8 @@ a lot of space.
 
 Recommended crontab :
 
-0    * * * * /path/to/cli.update.php pool_hashrates
-
-*/15 * * * * /path/to/cli.update.php balances random_addresses individual_hashrates top_contributors
-
-*/3  * * * * /path/to/cli.update.php average_hashrates
-
-*    * * * * /path/to/cli.update.php pool_status recent_blocks
+	0    * * * * /path/to/cli.update.php pool_hashrates
+	*/30 * * * * /path/to/cli.update.php block_metadata
+	*/15 * * * * /path/to/cli.update.php balances random_addresses individual_hashrates top_contributors
+	*/3  * * * * /path/to/cli.update.php average_hashrates
+	*    * * * * /path/to/cli.update.php pool_status blocks
