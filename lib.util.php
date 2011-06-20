@@ -376,11 +376,15 @@ EOT;
  * @return void
  */
 function printFooter($relative, $more = '') {
+	$now = date('Y-m-d \a\t H:i:s');
 	echo <<<EOT
 <footer>
 <hr />
 <p style="float: right;">
-<a href="https://github.com/Artefact2/eligius-stats">Source</a> - <a href="http://eligius.st/">Eligius Wiki</a> - Donate to <a href="bitcoin:1666R5kdy7qK2RDALPJQ6Wt1czdvn61CQR">1666R5kdy7qK2RDALPJQ6Wt1czdvn61CQR</a> !
+Page generated the $now UTC -
+<a href="https://github.com/Artefact2/eligius-stats">Source</a> -
+<a href="http://eligius.st/">Eligius Wiki</a> -
+Donate to <a href="bitcoin:1666R5kdy7qK2RDALPJQ6Wt1czdvn61CQR">1666R5kdy7qK2RDALPJQ6Wt1czdvn61CQR</a> !
 </p>
 EOT;
 	if(file_exists(__DIR__.'/inc.analytics.php')) {
