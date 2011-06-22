@@ -59,8 +59,10 @@ function showHashrateAverage($server, $address) {
 			$lClass = ' class="warn"';
 		} else $lClass = '';
 
-		$rejectedSharesShortPercentage = number_format(100 * ($rejectedSharesShort) / ($rejectedSharesShort + $sharesShort), 2). ' %';
-		$rejectedSharesLongPercentage = number_format(100 * ($rejectedSharesLong) / ($rejectedSharesLong + $sharesLong), 2). ' %';
+		if($sharesShort == 0) $rejectedSharesShortPercentage = '<small>N/A</small>';
+		else $rejectedSharesShortPercentage = number_format(100 * ($rejectedSharesShort) / ($rejectedSharesShort + $sharesShort), 2). ' %';
+		if($sharesLong == 0) $rejectedSharesLongPercentage = '<small>N/A</small>';
+		else $rejectedSharesLongPercentage = number_format(100 * ($rejectedSharesLong) / ($rejectedSharesLong + $sharesLong), 2). ' %';
 
 		$reasons = array();
 		if(isset($averages_long['invalid'][$server][$address]) && $rejectedSharesLong > 0) {
@@ -68,12 +70,12 @@ function showHashrateAverage($server, $address) {
 				$reasons[$reason]['long'] = $count;
 			}
 		}
-		if(isset($averages_short['invalid'][$server][$address]) && $rejectedSharesShort > 0) {
+		if(isset($averages_short['invalid'][$server][$address]) && $rejectedSharesShort > 0) {
 			foreach($averages_short['invalid'][$server][$address] as $reason => $count) {
 				$reasons[$reason]['short'] = $count;
 			}
 		}
-		if(count($reason) > 0) {
+		if(count($reasons) > 0) {
 			$rjClass = ' class="tsep" style="border-color: #888;"';
 		} else $rjClass = '';
 
