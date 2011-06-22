@@ -200,6 +200,7 @@ function showTopContributors() {
 	$i = 0;
 	if($success) {
 		foreach($top as $t) {
+			if($i >= NUMBER_OF_TOP_CONTRIBUTORS) break;
 			++$i;
 
 			$hashrate = $t['hashrate'];
@@ -209,8 +210,9 @@ function showTopContributors() {
 			$hashrate = prettyHashrate($hashrate);
 			$pServer = $SERVERS[$server][0];
 
-			echo "<tr class=\"rank$i\"><td>$i</td><td>$pServer</td><td><a href=\"./$server/$address\">$address</a></td><td>$hashrate</td></tr>\n";
+			echo "<tr class=\"rank$i\"><td>#$i</td><td>$pServer</td><td><a href=\"./$server/$address\">$address</a></td><td>$hashrate</td></tr>\n";
 		}
+		echo "<tr><td colspan=\"4\"><a href=\"./contrib\">Show all…</a></td></tr>\n";
 	} else echo "<tr><td colspan=\"4\"><small>N/A</small></td></tr>\n";
 
 	echo "</tbody>\n</table>\n";

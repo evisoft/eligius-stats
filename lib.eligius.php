@@ -205,7 +205,7 @@ function updateServerStatus($serverName, $address, $port) {
  * @param int $numContributors how many top contributors to fetch
  * @return bool true if the operation was successful.
  */
-function updateTopContributors($numContributors = NUMBER_OF_TOP_CONTRIBUTORS) {
+function updateTopContributors() {
 	$end = time() - HASHRATE_LAG;
 	$start = $end - HASHRATE_AVERAGE;
 
@@ -215,7 +215,7 @@ function updateTopContributors($numContributors = NUMBER_OF_TOP_CONTRIBUTORS) {
 		WHERE time BETWEEN $start AND $end
 			AND our_result <> 'N'
 		GROUP BY username, server
-		ORDER BY hashrate DESC LIMIT ".$numContributors
+		ORDER BY hashrate DESC"
 	);
 
 	$top = array();

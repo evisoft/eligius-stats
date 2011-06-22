@@ -126,7 +126,7 @@ table#rfb_indiv {
 	width: 90em;
 }
 
-table#rfb_all {
+table#rfb_all, table#contrib {
 	width: 100%;
 }
 
@@ -141,4 +141,18 @@ a#announcement_toggle {
 	float: right;
 	margin: 0;
 	padding-bottom: 0.3em;
+}
+
+div.hash_progress {
+	width: 100%;
+	background-color: #CCCCCC;
+	border:  1px solid #888888;
+	text-align: left;
+}
+
+div.hash_progress > div {
+	background-color: #88CC00;
+	border-right: 1px solid green;
+	display: inline-block;
+
 }
