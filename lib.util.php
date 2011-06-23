@@ -336,7 +336,7 @@ EOT;
 <script type="text/javascript" src="$relativePathToRoot/flot/jquery.min.js"></script>
 <script type="text/javascript" src="$relativePathToRoot/flot/jquery.flot.min.js"></script>
 <script type="text/javascript" src="$relativePathToRoot/flot/jquery.flot.stack.min.js"></script>
-<script language="javascript" type="text/javascript" src="$relativePathToRoot/flot/jquery.flot.selection.min.js"></script>
+<script type="text/javascript" src="$relativePathToRoot/flot/jquery.flot.selection.min.js"></script>
 <script type="text/javascript" src="$relativePathToRoot/jquery-cookie/jquery.cookie.js"></script>
 
 EOT;
@@ -423,12 +423,23 @@ function prettyBlockStatus($s) {
 	if($s === true) {
 		return '<td>Valid</td>';
 	} else if(isset($s) && $s === false) {
-		return '<td class="warn">Invalid</td>';
+		return '<td>Invalid</td>';
 	} else if(is_numeric($s)) {
 		return '<td class="unconfirmed" title="'.$s.' confirmations left">'.$s.' conf. left</td>';
 	} else {
 		return '<td class="unconfirmed" title="Unknown status">Unknown</td>';
 	}
+}
+
+/**
+ * Get the class="" attribute for a block row.
+ * @param mixed $s the status of the block.
+ * @return string formatted ' class=""' string
+ */
+function getRowClassForBlock($s) {
+	if($s === false) {
+		return ' invalid_blk';
+	} else return '';
 }
 
 /**

@@ -170,6 +170,7 @@ function showRecentBlocks() {
 			$server = $SERVERS[$r['server']][0];
 			$block = '<a href="http://blockexplorer.com/block/'.$r['hash'].'" title="'.$hash.'">…'.substr($hash, -25).'</a>';
 			$status = prettyBlockStatus($r['valid']);
+			$statusClass = getRowClassForBlock($r['valid']);
 
 			if(isset($r['duration'])) {
 				list($seconds, $minutes, $hours) = extractTime($r['duration']);
@@ -180,7 +181,7 @@ function showRecentBlocks() {
 
 			$c = $colors[$r['server']];
 
-			echo "<tr class=\"row$a\"><td>$when</td><td style=\"background-color: $c;\">$server</td>$duration<td class=\"ralign\">$shares</td>$status<td class=\"ralign\">$block</td></tr>\n";
+			echo "<tr class=\"row$a$statusClass\"><td>$when</td><td style=\"background-color: $c;\">$server</td>$duration<td class=\"ralign\">$shares</td>$status<td class=\"ralign\">$block</td></tr>\n";
 		}
 
 		$a = ($a + 1) % 2;

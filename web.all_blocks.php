@@ -88,7 +88,9 @@ function showBlocks($address = null) {
 				$duration = "<td colspan=\"3\"><small>N/A</small></td>";
 			}
 
-			echo "<tr class=\"row$a\"><td>$when</td>$server$duration";
+			$rowClass = getRowClassForBlock($r['valid']);
+
+			echo "<tr class=\"row$a$rowClass\"><td>$when</td>$server$duration";
 
 			if($address !== null) {
 				if($r['shares'] === null) {
