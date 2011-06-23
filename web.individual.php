@@ -236,7 +236,8 @@ function showRecentPayouts($server, $address) {
 			}
 
 			$status = prettyBlockStatus($r['valid']);
-			echo "<tr class=\"row$a\"><td>$when</td>$duration<td class=\"ralign\">$myShares</td><td class=\"ralign\">$shares</td><td class=\"ralign\">$percentage</td>$reward$status<td class=\"ralign\">$block</td></tr>\n";
+			$statusClass = getRowClassForBlock($r['valid']);
+			echo "<tr class=\"row$a$statusClass\"><td>$when</td>$duration<td class=\"ralign\">$myShares</td><td class=\"ralign\">$shares</td><td class=\"ralign\">$percentage</td>$reward$status<td class=\"ralign\">$block</td></tr>\n";
 		}
 
 		$a = ($a + 1) % 2;
