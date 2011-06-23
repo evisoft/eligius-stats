@@ -15,6 +15,13 @@ These scripts are distributed under the GNU Affero General Public License v3.
 
 Author : Artefact2 <artefact2@gmail.com>
 
+Depedencies
+===========
+
+You must fetch the canvas-text library and place it in the canvas-text folder. One easy way to do that is to run :
+
+svn checkout http://canvas-text.googlecode.com/svn/trunk/ canvas-text
+
 Using the cli.update.php script
 ===============================
 

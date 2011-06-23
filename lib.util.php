@@ -331,6 +331,7 @@ function printHeader($title, $shownTitle, $relativePathToRoot = '.', $includeJqu
 EOT;
 	if($includeJquery) echo <<<EOT
 <!--[if lte IE 8]><script type="text/javascript" src="$relativePathToRoot/flot/excanvas.min.js"></script><![endif]-->
+<script type="text/javascript" src="$relativePathToRoot/canvas-text/canvas.text.js"></script>
 <script type="text/javascript" src="$relativePathToRoot/lib.util.js"></script>
 <script type="text/javascript" src="$relativePathToRoot/flot/jquery.min.js"></script>
 <script type="text/javascript" src="$relativePathToRoot/flot/jquery.flot.min.js"></script>
