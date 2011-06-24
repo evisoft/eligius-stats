@@ -573,7 +573,8 @@ function maybeProcessInvalidBlock(&$block, &$nextBlock) {
  */
 function updateBlock(&$block, $previousBlock = null) {
 	static $lackOfConfirmations = null;
-	if($lackOfConfirmations === null) $lackOfConfirmations = getUnconfirmedBlocks();
+	static $lastUnconfirmedBlockDate;
+	if($lackOfConfirmations === null) $lastUnconfirmedBlockDate = getUnconfirmedBlocks($lackOfConfirmations);
 
 	$json = bitcoind('getblockbyhash '.$block['hash'], true);
 	if(strpos($json, 'error:') === 0) {
@@ -581,12 +582,19 @@ function updateBlock(&$block, $previousBlock = null) {
 		return;
 	} else if(isset($lackOfConfirmations[$block['hash']])) {
 		$block['valid'] = $lackOfConfirmations[$block['hash']];
-	} else {
-		$block['valid'] = true;
 	}
 
 	$bData = json_decode_safe($json, false);
 	$block['when'] = $bData['time'];
+
+	if($bData['time'] < $lastUnconfirmedBlockDate) {
+		if(!isset($block['valid']) || $block['valid'] !== false) {
+			$block['valid'] = true;
+		}
+	}
+
+	if(!isset($block['valid'])) $block['valid'] = false;
+	
 	if($previousBlock == null) {
 		unset($block['duration']);
 	} else {
@@ -596,9 +604,10 @@ function updateBlock(&$block, $previousBlock = null) {
 
 /**
  * Get all the currently unconfirmed blocks.
- * @return array list of currently unconfirmed block
+ * @param array $lackOfConfirmations list of currently unconfirmed block
+ * @return integer timestamp of oldest unconfirmed block
  */
-function getUnconfirmedBlocks() {
+function getUnconfirmedBlocks(&$lackOfConfirmations) {
 	$lackOfConfirmations = array();
 	$blockCount = bitcoind('getblockcount');
 	for($i = (NUM_CONFIRMATIONS - 1); $i >= 0; --$i) {
@@ -606,7 +615,7 @@ function getUnconfirmedBlocks() {
 		$bData = json_decode_safe(bitcoind('getblockbycount '.$n), false);
 		$lackOfConfirmations[$bData['hash']] = NUM_CONFIRMATIONS - $i;
 	}
-	return $lackOfConfirmations;
+	return $bData['time'];
 }
 
 /**
