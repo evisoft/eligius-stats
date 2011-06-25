@@ -152,7 +152,7 @@ $.get("$paidUri", "", function(data, textStatus, xhr) {
 			$.plot($('#eligius_balance'), series, options);
 
 			var maxZoomT = 600000;
-			var maxZoomY = 0.05;
+			var maxZoomY = 0.005;
 			$("#eligius_balance").bind("plotselected", function (event, ranges) {
 				if (ranges.xaxis.to - ranges.xaxis.from < maxZoomT)
 					ranges.xaxis.to = ranges.xaxis.from + maxZoomT;
