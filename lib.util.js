@@ -169,3 +169,42 @@ EligiusUtils.updateToggleLink = function() {
 		$('a#announcement_toggle').html('Hide announcements [X]');
 	}
 }
+
+EligiusUtils.formatNumber = function(num) {
+	var str = num + '';
+	var ret = num.substr(0, num.length % 3);
+	for(var i = ret.length; i < num.length; i += 3) {
+		ret = ret + ',' + str.substr(i, 3);
+	}
+
+	if(ret.substr(0, 1) == ',') ret = ret.substr(1);
+
+	return ret;
+}
+
+EligiusUtils.initShareCounter = function(servers) {
+	var instantData;
+	var c = servers.length;
+	var i;
+	var name;
+	var t;
+
+	$.get("./json/instant_share_count.json", "", function(data, textStatus, xhr) {
+		instantData = data;
+		var periodicRefresh = function() {
+			$.get("./json/instant_share_count.json", "", function(data, textStatus, xhr) {
+				instantData = data;
+			}, "json");
+		}
+		setInterval(periodicRefresh, 60000);
+		var updateCounts = function() {
+			t = new Date().getTime() + __clockOffset;
+			for(i = 0; i < c; ++i) {
+				name = servers[i];
+				$("#instant_scount_" + name).html(EligiusUtils.formatNumber((+instantData[name].totalShares
+						+ ((0.001 * t - instantData[name].lastUpdated)) * instantData[name].instantRate).toFixed(0)));
+			}
+		}
+		setInterval(updateCounts, 30);
+	}, "json");
+}

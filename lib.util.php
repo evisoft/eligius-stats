@@ -321,6 +321,7 @@ function extractTime($d) {
  * @return void
  */
 function printHeader($title, $shownTitle, $relativePathToRoot = '.', $includeJquery = true) {
+	$millis = 1000 * microtime(true) + 300; /* ~0.3s page load time */
 	echo <<<EOT
 <!DOCTYPE html>
 <html>
@@ -338,6 +339,9 @@ EOT;
 <script type="text/javascript" src="$relativePathToRoot/flot/jquery.flot.stack.min.js"></script>
 <script type="text/javascript" src="$relativePathToRoot/flot/jquery.flot.selection.min.js"></script>
 <script type="text/javascript" src="$relativePathToRoot/jquery-cookie/jquery.cookie.js"></script>
+<script type="text/javascript">
+var __clockOffset = $millis - new Date().getTime();
+</script>
 
 EOT;
 

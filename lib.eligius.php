@@ -45,7 +45,7 @@ const S_NETWORK_PROBLEM = 2;
 const STATUS_TIMEOUT = 20;
 const STATUS_FILE_NAME = 'pool_status.json';
 
-const INSTANT_COUNT_PERIOD = 30;
+const INSTANT_COUNT_PERIOD = 60;
 const INSTANT_COUNT_FILE_NAME = 'instant_share_count.json';
 
 const NUMBER_OF_RECENT_BLOCKS = 7;

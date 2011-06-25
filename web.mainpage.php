@@ -326,6 +326,38 @@ EOT;
 	echo "});\n</script>\n";
 }
 
+function showInstantShareCounts() {
+	global $SERVERS;
+
+	echo "<h2>Current round statistics</h2>\n<table id=\"instant_stats\">\n<thead>\n";
+
+	$instant = json_decode_safe(__DIR__.'/'.DATA_RELATIVE_ROOT.'/'.INSTANT_COUNT_FILE_NAME);
+	$fInstant = array();
+	$toUpdate = array();
+	foreach($SERVERS as $name => $data) {
+		list($pName,) = $data;
+		if(!isset($instant[$name])) $fInstant[$pName] = null;
+		else {
+			$fInstant[$pName] = '<strong class="moremore" id="instant_scount_'.$name.'">'.prettyInt($instant[$name]['totalShares']).'</strong>';
+			$toUpdate[] = $name;
+		}
+	}
+
+	echo "<tr><th></th>\n";
+	foreach(array_keys($fInstant) as $s) {
+		echo "<th>$s</th>";
+	}
+	echo "\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>Shares in the current round</td>";
+	foreach(array_values($fInstant) as $h) {
+		if($h === null) $h = '<small>N/A</small>';
+		echo "<td>$h</td>";
+	}
+	echo "\n</tr>\n</tbody>\n</table>\n";
+
+	$toUpdate = "['".implode("', '", $toUpdate)."']";
+	echo '<script type="text/javascript">EligiusUtils.initShareCounter('.$toUpdate.')</script>'."\n";
+}
+
 if($_SERVER['QUERY_STRING'] !== "dispatch_request") {
 	header('HTTP/1.1 404 Not Found', true, 404);
 	die;
@@ -335,6 +367,7 @@ printHeader('Eligius pool statistics', 'Eligius pool statistics <small>(version 
 
 showIndividualInstructions();
 showPoolStatuses();
+showInstantShareCounts();
 showPoolHashRate();
 showHashRateGraph();
 showRecentBlocks();
