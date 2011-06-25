@@ -70,6 +70,14 @@ $commands = array(
 		return $r;
 	},
 
+	'instant_rate' => function() use($SERVERS) {
+		$r = true;
+		foreach($SERVERS as $serverName => $data) {
+			$r = $r && updateInstantShareCount($serverName);
+		}
+		return $r;
+	},
+
 	'blocks' => function() use($SERVERS) {
 		$r = true;
 		foreach($SERVERS as $serverName => $data) {

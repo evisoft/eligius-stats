@@ -45,6 +45,9 @@ const S_NETWORK_PROBLEM = 2;
 const STATUS_TIMEOUT = 20;
 const STATUS_FILE_NAME = 'pool_status.json';
 
+const INSTANT_COUNT_PERIOD = 30;
+const INSTANT_COUNT_FILE_NAME = 'instant_share_count.json';
+
 const NUMBER_OF_RECENT_BLOCKS = 7;
 const NUMBER_OF_TOP_CONTRIBUTORS = 10;
 
@@ -198,6 +201,91 @@ function updateServerStatus($serverName, $address, $port) {
 	}
 
 	return json_encode_safe($status, $f);
+}
+
+
+function updateInstantShareCount($server) {
+	$f = __DIR__.'/'.DATA_RELATIVE_ROOT.'/'.INSTANT_COUNT_FILE_NAME;
+	if(!file_exists($f)) {
+		$instant = array();
+	} else {
+		$instant = json_decode_safe($f);
+	}
+
+	$recent = cacheFetch('blocks_recent_'.$server, $success);
+	if($success) {
+		$lastBlockTimestamp = null;
+		usort($recent, function($a, $b) { return $b['when'] - $a['when']; });
+		foreach($recent as $blk) {
+			if($blk['valid'] === true || is_int($blk['valid'])) {
+				$lastBlockTimestamp = $blk['when'];
+				break;
+			}
+		}
+
+		if(!isset($instant[$server]['roundStartTime']) || $instant[$server]['roundStartTime'] != $lastBlockTimestamp) {
+			$instant[$server]['roundStartTime'] = $lastBlockTimestamp;
+
+			$now = time();
+			$end = $now - HASHRATE_LAG;
+			$start = $lastBlockTimestamp;
+			$q = mysql_query("
+				SELECT COUNT(id) AS total, MAX(id) AS lastid
+				FROM shares
+				WHERE time BETWEEN $start AND $end
+					AND server = '$server'
+					AND our_result <> 'N'"
+			);
+			$q = mysql_fetch_assoc($q);
+
+			$instant[$server]['totalShares'] = $q['total'];
+			$instant[$server]['lastUpdated'] = $now;
+			$instant[$server]['lastID'] = $q['lastid'];
+
+			$start = $end - INSTANT_COUNT_PERIOD;
+			$q = mysql_query("
+				SELECT COUNT(id) / ($end - $start) AS rate
+				FROM shares
+				WHERE time BETWEEN ($start + 1) AND $end
+					AND server = '$server'
+					AND our_result <> 'N'"
+			);
+			$q = mysql_fetch_assoc($q);
+
+			$instant[$server]['instantRate'] = $q['rate'];
+		} else {
+			$now = time();
+			$end = $now - HASHRATE_LAG;
+			$thresholdID = $instant[$server]['lastID'];
+			$q = mysql_query("
+				SELECT COUNT(id) AS total, MAX(id) AS lastid
+				FROM shares
+				WHERE time <= $end
+					AND server = '$server'
+					AND id > $thresholdID
+					AND our_result <> 'N'"
+			);
+			$q = mysql_fetch_assoc($q);
+
+			$instant[$server]['totalShares'] += $q['total'];
+			$instant[$server]['lastUpdated'] = $now;
+			if($q['lastid'] > 0) $instant[$server]['lastID'] = $q['lastid'];
+
+			$start = $end - INSTANT_COUNT_PERIOD;
+			$q = mysql_query("
+				SELECT COUNT(id) / ($end - $start) AS rate
+				FROM shares
+				WHERE time BETWEEN $start AND $end
+					AND server = '$server'
+					AND our_result <> 'N'"
+			);
+			$q = mysql_fetch_assoc($q);
+
+			$instant[$server]['instantRate'] = $q['rate'];
+		}
+	} else $instant[$server] = array();
+
+	return json_encode_safe($instant, $f);
 }
 
 /**
