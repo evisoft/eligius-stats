@@ -248,7 +248,7 @@ function updateRandomAddress($serverName, $apiRoot) {
  */
 function updateAverageHashrates() {
 	$end = time() - HASHRATE_LAG;
-	
+
 	$wStart = time() - HASHRATE_LAG - 60;
 	$isWorking = mysql_query("
 		SELECT COUNT(*) AS shares
@@ -512,7 +512,7 @@ function getServerStatus($server, $port, $timeout, &$status, &$latency) {
 	}
 
 	$work = json_decode_safe(substr($resp, strpos($resp, '{') - 1), false);
-	
+
 	if(!isset($work['result']['data']) || strlen($work['result']['data']) !== 256 || $work['error'] !== null) {
 		$status = S_INVALID_WORK;
 		return false;
@@ -594,7 +594,7 @@ function updateBlock(&$block, $previousBlock = null) {
 	}
 
 	if(!isset($block['valid'])) $block['valid'] = false;
-	
+
 	if($previousBlock == null) {
 		unset($block['duration']);
 	} else {
@@ -609,13 +609,17 @@ function updateBlock(&$block, $previousBlock = null) {
  */
 function getUnconfirmedBlocks(&$lackOfConfirmations) {
 	$lackOfConfirmations = array();
+	$firstDate = null;
 	$blockCount = bitcoind('getblockcount');
 	for($i = (NUM_CONFIRMATIONS - 1); $i >= 0; --$i) {
 		$n = $blockCount - $i;
 		$bData = json_decode_safe(bitcoind('getblockbycount '.$n), false);
 		$lackOfConfirmations[$bData['hash']] = NUM_CONFIRMATIONS - $i;
+		if($firstDate === null) {
+			$firstDate = $bData['time'];
+		}
 	}
-	return $bData['time'];
+	return $firstDate;
 }
 
 /**
