@@ -182,12 +182,17 @@ EligiusUtils.formatNumber = function(num) {
 	return ret;
 }
 
+EligiusUtils.getCDF = function(shares, difficulty) {
+	return 1.0 - Math.exp(-shares / difficulty);
+}
+
 EligiusUtils.initShareCounter = function(servers) {
 	var instantData;
 	var c = servers.length;
 	var i;
 	var name;
 	var t;
+	var s;
 
 	$.get("./json/instant_share_count.json", "", function(data, textStatus, xhr) {
 		instantData = data;
@@ -201,8 +206,10 @@ EligiusUtils.initShareCounter = function(servers) {
 			t = new Date().getTime() + __clockOffset;
 			for(i = 0; i < c; ++i) {
 				name = servers[i];
-				$("#instant_scount_" + name).html(EligiusUtils.formatNumber((+instantData[name].totalShares
-						+ ((0.001 * t - instantData[name].lastUpdated)) * instantData[name].instantRate).toFixed(0)));
+				s = +instantData[name].totalShares
+						+ ((0.001 * t - instantData[name].lastUpdated)) * instantData[name].instantRate;
+				$("#instant_scount_" + name).html(EligiusUtils.formatNumber(s.toFixed(0)));
+				$("#instant_cdf_" + name).html((EligiusUtils.getCDF(s, instantData['difficulty']) * 100).toFixed(3));
 			}
 		}
 		setInterval(updateCounts, 30);

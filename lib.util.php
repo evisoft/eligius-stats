@@ -463,3 +463,13 @@ function addError($e) {
 function addMessage($m) {
 	$_SESSION['_messages'][] =  array('message', $m);
 }
+
+/**
+ * Get the CDF given the number of submitted shares.
+ * @param integer $shares the number of submitted shares
+ * @param float $difficulty the current difficulty
+ * @return float the probability that a block should have been found given this number of shares
+ */
+function getCDF($shares, $difficulty) {
+	return 1.0 - exp(-$shares / $difficulty);
+}

@@ -203,7 +203,11 @@ function updateServerStatus($serverName, $address, $port) {
 	return json_encode_safe($status, $f);
 }
 
-
+/**
+ * Update the instant share rate and instant share count for the current round.
+ * @param $server the server name
+ * @return bool true if the operation succeeded.
+ */
 function updateInstantShareCount($server) {
 	$f = __DIR__.'/'.DATA_RELATIVE_ROOT.'/'.INSTANT_COUNT_FILE_NAME;
 	if(!file_exists($f)) {
@@ -284,6 +288,8 @@ function updateInstantShareCount($server) {
 			$instant[$server]['instantRate'] = $q['rate'];
 		}
 	} else $instant[$server] = array();
+
+	$instant['difficulty'] = trim(bitcoind('getdifficulty'));
 
 	return json_encode_safe($instant, $f);
 }

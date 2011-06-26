@@ -336,10 +336,14 @@ function showInstantShareCounts() {
 	$toUpdate = array();
 	foreach($SERVERS as $name => $data) {
 		list($pName,) = $data;
-		if(!isset($instant[$name])) $fInstant[$pName] = null;
+		if(!isset($instant[$name])) {
+			$fInstant[$pName] = null;
+			$fTotals[$name] = null;
+		}
 		else {
 			$fInstant[$pName] = '<strong class="moremore" id="instant_scount_'.$name.'">'.prettyInt($instant[$name]['totalShares']).'</strong>';
 			$toUpdate[] = $name;
+			$fTotals[$name] = $instant[$name]['totalShares'];
 		}
 	}
 
@@ -351,6 +355,11 @@ function showInstantShareCounts() {
 	foreach(array_values($fInstant) as $h) {
 		if($h === null) $h = '<small>N/A</small>';
 		echo "<td>$h</td>";
+	}
+	echo "\n</tr>\n<tr>\n<td title=\"Probability that a block should have been found given the number of submitted shares.\">Current round's CDF</td>";
+	foreach($fTotals as $name => $h) {
+		if($h === null) $h = '<small>N/A</small>';
+		echo "<td><span id=\"instant_cdf_$name\">".round(getCDF($h, $instant['difficulty']) * 100, 3)."</span> %</td>";
 	}
 	echo "\n</tr>\n</tbody>\n</table>\n";
 
