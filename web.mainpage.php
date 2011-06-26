@@ -356,7 +356,7 @@ function showInstantShareCounts() {
 		if($h === null) $h = '<small>N/A</small>';
 		echo "<td>$h</td>";
 	}
-	echo "\n</tr>\n<tr>\n<td title=\"Probability that a block should have been found given the number of submitted shares.\">Current round's CDF</td>";
+	echo "\n</tr>\n<tr>\n<td title=\"Probability of finding a block given the number of submitted shares.\"><span>Current round's CDF</span></td>";
 	foreach($fTotals as $name => $h) {
 		if($h === null) $h = '<small>N/A</small>';
 		echo "<td><span id=\"instant_cdf_$name\">".round(getCDF($h, $instant['difficulty']) * 100, 3)."</span> %</td>";

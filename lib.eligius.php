@@ -227,7 +227,7 @@ function updateInstantShareCount($server) {
 			}
 		}
 
-		if(!isset($instant[$server]['roundStartTime']) || $instant[$server]['roundStartTime'] != $lastBlockTimestamp) {
+		if(!isset($instant[$server]['roundStartTime']) || $instant[$server]['roundStartTime'] != $lastBlockTimestamp || !$instant[$server]['lastID']) {
 			$instant[$server]['roundStartTime'] = $lastBlockTimestamp;
 
 			$now = time();

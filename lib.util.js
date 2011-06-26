@@ -188,28 +188,41 @@ EligiusUtils.getCDF = function(shares, difficulty) {
 
 EligiusUtils.initShareCounter = function(servers) {
 	var instantData;
+	var rates = {};
+	var totals = {};
+	var lastUpdated = {};
 	var c = servers.length;
 	var i;
-	var name;
 	var t;
-	var s;
+	var name;
+	var difficulty;
 
 	$.get("./json/instant_share_count.json", "", function(data, textStatus, xhr) {
-		instantData = data;
+		for(i = 0; i < c; ++i) {
+			rates[servers[i]] = data[servers[i]].instantRate;
+			totals[servers[i]] = data[servers[i]].totalShares;
+			lastUpdated[servers[i]] = data[servers[i]].lastUpdated;
+		}
+		difficulty = data.difficulty;
+
 		var periodicRefresh = function() {
 			$.get("./json/instant_share_count.json", "", function(data, textStatus, xhr) {
-				instantData = data;
+				for(i = 0; i < c; ++i) {
+					rates[servers[i]] = Math.max(((data[servers[i]].totalShares + 60 * data[servers[i]].instantRate)
+						- totals[servers[i]]) / 60, 0);
+				}
+				difficulty = data.difficulty;
 			}, "json");
 		}
 		setInterval(periodicRefresh, 60000);
 		var updateCounts = function() {
-			t = new Date().getTime() + __clockOffset;
+			t = 0.001 * (new Date().getTime() + __clockOffset);
 			for(i = 0; i < c; ++i) {
 				name = servers[i];
-				s = +instantData[name].totalShares
-						+ ((0.001 * t - instantData[name].lastUpdated)) * instantData[name].instantRate;
-				$("#instant_scount_" + name).html(EligiusUtils.formatNumber(s.toFixed(0)));
-				$("#instant_cdf_" + name).html((EligiusUtils.getCDF(s, instantData['difficulty']) * 100).toFixed(3));
+				totals[name] += (t - lastUpdated[name]) * rates[name];
+				lastUpdated[name] = t;
+				$("#instant_scount_" + name).html(EligiusUtils.formatNumber(totals[name].toFixed(0)));
+				$("#instant_cdf_" + name).html((EligiusUtils.getCDF(totals[name], difficulty) * 100).toFixed(3));
 			}
 		}
 		setInterval(updateCounts, 30);

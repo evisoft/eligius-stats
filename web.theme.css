@@ -170,3 +170,7 @@ tr.invalid_blk, tr.invalid_blk > td {
         background-repeat: repeat-x;
         background-size: auto 100%;
 }
+
+td[title] > span {
+	border-bottom: 1px dotted black;
+}
