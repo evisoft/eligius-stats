@@ -165,14 +165,14 @@ $.get("$paidUri", "", function(data, textStatus, xhr) {
 						yaxis: { min: ranges.yaxis.from, max: ranges.yaxis.to }
 				}));
 			});
-		
+
 			$("#eligius_balance").dblclick(function() {
 				$.plot($('#eligius_balance'), series, options);
 			});
 		}, "json").error(function() {
 			$('#eligius_balance_errors').append('<p>An error happened while loading the "current block estimate" data.<br />Try reloading the page.</p>');
 		});
-		
+
 	}, "json").error(function() {
 		$('#eligius_balance_errors').append('<p>An error happened while loading the "unpaid reward" data.<br />Try reloading the page.</p>');
 	});
@@ -241,7 +241,7 @@ function showRecentPayouts($server, $address) {
 		}
 
 		$a = ($a + 1) % 2;
-		echo "<tr class=\"row$a\"><td colspan=\"9\"><a href=\"../blocks/".htmlspecialchars($address)."\">Show more for this address…</a></td></tr>\n";
+		echo "<tr class=\"row$a\"><td colspan=\"10\"><a href=\"../blocks/".htmlspecialchars($address)."\">Show more for this address…</a></td></tr>\n";
 	}
 
 	echo "</tbody>\n</table>\n";

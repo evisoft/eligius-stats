@@ -232,7 +232,7 @@ function updateInstantShareCount($server) {
 
 			$now = time();
 			$end = $now - HASHRATE_LAG;
-			$start = $lastBlockTimestamp;
+			$start = $lastBlockTimestamp ?: "0";
 			$q = mysql_query("
 				SELECT COUNT(id) AS total, MAX(id) AS lastid
 				FROM shares
@@ -453,7 +453,7 @@ function updateBlocks($server, $apiRoot) {
 	$c = count($blocks);
 	$newBlocks = array();
 
-	for($i = 0; $i < ($c - 1); ++$i) {
+	for($i = 0; $i < $c; ++$i) {
 		$blk = pathinfo($blocks[$i], PATHINFO_FILENAME);
 		if(count($recent) > 0 && $recent[0]['when'] >= $foundAt[$i]) break;
 
@@ -461,9 +461,9 @@ function updateBlocks($server, $apiRoot) {
 
 		$bData['hash'] = $blk;
 		$bData['when'] = $foundAt[$i];
-		$bData['duration'] = $foundAt[$i] - $foundAt[$i + 1];
+		$bData['duration'] = ($i < ($c - 1)) ? ($foundAt[$i] - $foundAt[$i + 1]) : null;
 
-		$start = $foundAt[$i + 1];
+		$start = ($i < ($c - 1)) ? ($foundAt[$i + 1]) : 0;
 		$end = $foundAt[$i];
 		$q = mysql_query("
 			SELECT username, COUNT(*) AS fshares
@@ -729,6 +729,10 @@ function updateAllBlockMetadata($server) {
 		trigger_error('Cannot fetch block metadata for '.$server.' : could not fetch cached blocks.', E_USER_WARNING);
 		return false;
 	}
+
+	$isSane = function($blk) { return isset($blk['hash']); };
+	$old = array_filter($old, $isSane);
+	$recent = array_filter($recent, $isSane);
 
 	$c = count($recent);
 	$d = count($old);

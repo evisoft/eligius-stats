@@ -165,6 +165,12 @@ function tryRepairJson($file) {
 		return file_put_contents($file, $contents) !== false;
 	}
 
+	$split = explode("]]", $contents);
+	if(count($split) >= 2) {
+		$contents = $split[0]."]]";
+		return file_put_contents($file, $contents) !== false;
+	}
+
 	$data = json_decode_safe($contents, false);
 	$newData = array();
 	$hadError = false;
