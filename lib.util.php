@@ -269,6 +269,12 @@ function prettyHashrate($hps) {
  * @return string a color in the rgb($r, $g, $b) format.
  */
 function extractColor($seed) {
+	global $COLOR_OVERRIDES;
+
+	if(isset($COLOR_OVERRIDES[$seed])) {
+		return $COLOR_OVERRIDES[$seed];
+	}
+
 	static $threshold = 100;
 
 	$d = sha1($seed);

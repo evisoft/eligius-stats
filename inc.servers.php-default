@@ -15,3 +15,8 @@ $SERVERS_ADDRESSES = array(
         '10.0.1.1:8337' => 'eu.mining.eligius.st:8337',
         'us.mining.eligius.st:8337' => 'us.mining.eligius.st:8337'
 );
+
+// Array of color overrides, form is array(<Prety name> => <Color>);
+$COLOR_OVERRIDES = array(
+
+);
