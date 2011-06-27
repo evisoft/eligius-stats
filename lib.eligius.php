@@ -573,9 +573,10 @@ function getActiveAddresses($apiRoot) {
  * @param int $timeout for how long should we try to connect to the server before failing ?
  * @param int $status the status of the server, is one of the S_ constants.
  * @param float $latency the latency, in seconds, to issue a getwork. Only valid if true is returned.
+ * @param int $retries how many retries to do before returning an error
  * @return bool true if the server is working correctly
  */
-function getServerStatus($server, $port, $timeout, &$status, &$latency) {
+function getServerStatus($server, $port, $timeout, &$status, &$latency, $retries = 2) {
 	$body = json_encode(array(
 		"method" => "getwork",
 		"params" => array(),
@@ -597,23 +598,32 @@ function getServerStatus($server, $port, $timeout, &$status, &$latency) {
 	$latency = microtime(true) - $lag;
 
 	if(curl_error($c))  {
-		$status = S_NETWORK_PROBLEM;
 		curl_close($c);
-		return false;
+		if($retries > 0) return getServerStatus($server, $port, 5, $status, $latency, $retries  - 1);
+		else {
+			$status = S_NETWORK_PROBLEM;
+			return false;
+		}
 	}
 
 	curl_close($c);
 
 	if(strpos($resp, 'Content-Type: application/json') === false) {
-		$status = S_INVALID_WORK;
-		return false;
+		if($retries > 0) return getServerStatus($server, $port, 5, $status, $latency, $retries  - 1);
+		else {
+			$status = S_INVALID_WORK;
+			return false;
+		}
 	}
 
 	$work = json_decode_safe(substr($resp, strpos($resp, '{') - 1), false);
 
 	if(!isset($work['result']['data']) || strlen($work['result']['data']) !== 256 || $work['error'] !== null) {
-		$status = S_INVALID_WORK;
-		return false;
+		if($retries > 0) return getServerStatus($server, $port, 5, $status, $latency, $retries  - 1);
+		else {
+			$status = S_INVALID_WORK;
+			return false;
+		}
 	}
 
 	$status = S_WORKING;
