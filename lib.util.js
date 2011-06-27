@@ -199,16 +199,16 @@ EligiusUtils.initShareCounter = function(servers) {
 
 	$.get("./json/instant_share_count.json", "", function(data, textStatus, xhr) {
 		for(i = 0; i < c; ++i) {
-			rates[servers[i]] = data[servers[i]].instantRate;
-			totals[servers[i]] = data[servers[i]].totalShares;
-			lastUpdated[servers[i]] = data[servers[i]].lastUpdated;
+			rates[servers[i]] = +data[servers[i]].instantRate;
+			totals[servers[i]] = +data[servers[i]].totalShares;
+			lastUpdated[servers[i]] = +data[servers[i]].lastUpdated;
 		}
 		difficulty = data.difficulty;
 
 		var periodicRefresh = function() {
 			$.get("./json/instant_share_count.json", "", function(data, textStatus, xhr) {
 				for(i = 0; i < c; ++i) {
-					rates[servers[i]] = Math.max(((data[servers[i]].totalShares + 60 * data[servers[i]].instantRate)
+					rates[servers[i]] = Math.max((((+data[servers[i]].totalShares) + 60 * (+data[servers[i]].instantRate))
 						- totals[servers[i]]) / 60, 0);
 				}
 				difficulty = data.difficulty;
