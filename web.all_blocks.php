@@ -21,7 +21,8 @@ require __DIR__.'/lib.eligius.php';
 require __DIR__.'/inc.servers.php';
 
 function showBlocks($address = null) {
-	global $SERVERS;
+	global $SERVERS, $LEGACY_SERVERS;
+	$s = $SERVERS + $LEGACY_SERVERS;
 	$now = time();
 
 	echo "<table id=\"rfb_all\">\n<thead>\n<tr><th>▼ When</th><th>Server</th><th colspan=\"3\">Round duration</th>";
@@ -39,7 +40,7 @@ function showBlocks($address = null) {
 	$success = true;
 	$recent = array();
 	$colors = array();
-	foreach($SERVERS as $name => $kzk) {
+	foreach($s as $name => $kzk) {
 		list($pName,) = $kzk;
 		$colors[$name] = extractColor($pName);
 
@@ -75,7 +76,7 @@ function showBlocks($address = null) {
 			$a = ($a + 1) % 2;
 
 			$hash = strtoupper($r['hash']);
-			$server = '<td style="background-color: '.$colors[$r['server']].';">'.$SERVERS[$r['server']][0].'</td>';
+			$server = '<td style="background-color: '.$colors[$r['server']].';">'.$s[$r['server']][0].'</td>';
 
 			$when = prettyDuration($now - $r['when'], false, 1).' ago';
 			$shares = $r['shares_total'];

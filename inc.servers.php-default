@@ -6,17 +6,22 @@
 
 // Array of the servers. Key index is short name, content is array(<Pretty name>, <API root>).
 $SERVERS = array(
-	'eu' => array('Eligius-EU', '/var/lib/eligius/eu'),
-	'us' => array('Eligius-US', '/var/lib/eligius/us')
+        '3' => array('Eligius-3', '/var/lib/eligius/3'),
+
 );
 
 // Used for server status. Key is the pool address (in address:port format), the value is the displayed address.
 $SERVERS_ADDRESSES = array(
-        '10.0.1.1:8337' => 'eu.mining.eligius.st:8337',
-        'us.mining.eligius.st:8337' => 'us.mining.eligius.st:8337'
+	'3' => array('10.0.1.3:8337', 's3.mining.eligius.st:8337'),
 );
 
 // Array of color overrides, form is array(<Prety name> => <Color>);
 $COLOR_OVERRIDES = array(
+	'Eligius-3' => 'rgb(154,201,201)',
+);
 
+// Same format as $SERVERS, but only for past blocks and pool hashrate.
+$LEGACY_SERVERS = array(
+	'eu' => array('Eligius-EU', '/var/lib/eligius/eu'),
+	'us' => array('Eligius-US', '/var/lib/eligius/us'),
 );

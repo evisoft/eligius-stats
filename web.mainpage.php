@@ -272,7 +272,7 @@ function showPoolHashRate() {
 }
 
 function showHashRateGraph() {
-	global $SERVERS;
+	global $SERVERS, $LEGACY_SERVERS;
 
 	echo "<div id=\"eligius_pool_hashrate_errors\" class=\"errors\"></div>\n";
 	echo "<div id=\"eligius_pool_hashrate\" style=\"width:750px;height:350px;\">You must enable Javascript to see the graph.</div>\n";
@@ -289,7 +289,7 @@ var options = {
 
 EOT;
 
-	foreach($SERVERS as $name => $data) {
+	foreach(($SERVERS + $LEGACY_SERVERS) as $name => $data) {
 		list($prettyName,) = $data;
 		$color = extractColor($prettyName);
 		$uri = './'.DATA_RELATIVE_ROOT.'/'.T_HASHRATE_POOL.'_'.$name.DATA_SUFFIX;
