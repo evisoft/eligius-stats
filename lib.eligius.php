@@ -22,6 +22,7 @@ const VERSION = '2.2';
 const T_BALANCE_CURRENT_BLOCK = 'balance_current_block';
 const T_BALANCE_UNPAID_REWARD = 'balance_unpaid';
 const T_BALANCE_ALREADY_PAID = 'already_paid';
+const T_BALANCE_CREDIT = 'credit';
 const T_HASHRATE_INDIVIDUAL = 'hashrate';
 const T_HASHRATE_POOL = 'hashrate_total';
 
@@ -102,14 +103,16 @@ function updateIndividualHashrate($serverName, $address, $hashrates) {
  * @param string $address the address to update.
  * @param string|float $current_block an estimation, in BTC, of the reward for this address with the current block.
  * @param string|float $unpaid the amount, in BTC, that is not yet paid to this address
+ * @param string|float $credit diff between PPS and reward
  * @param string|float $paid the amount, in BTC, already paid to this address (ever)
  * @return bool true if the operations succeeded, false otherwise
  */
-function updateBalance($serverName, $address, $current_block, $unpaid, $paid) {
+function updateBalance($serverName, $address, $current_block, $unpaid, $credit, $paid) {
 	$identifier = $serverName.'_'.$address;
 	$ret = true;
 	$ret = $ret && updateData(T_BALANCE_CURRENT_BLOCK, $identifier, null, $current_block, TIMESPAN_SHORT);
 	$ret = $ret && updateData(T_BALANCE_UNPAID_REWARD, $identifier, null, $unpaid, TIMESPAN_SHORT);
+	$ret = $ret && updateData(T_BALANCE_CREDIT, $identifier, null, $credit, TIMESPAN_SHORT);
 	$ret = $ret && updateData(T_BALANCE_ALREADY_PAID, $identifier, null, $paid, TIMESPAN_SHORT);
 	return $ret;
 }
@@ -160,7 +163,8 @@ function updateAllBalancesOnServer($serverName, $apiRoot, $tickCallback = null) 
 		$paid = isset($latest[$address]['everpaid']) ? satoshiToBTC($latest[$address]['everpaid']) : 0.0;
 		$unpaid = isset($latest[$address]['balance']) ? satoshiToBTC($latest[$address]['balance']) : 0.0;
 		$current = satoshiToBTC(bcsub($balances[$address]['balance'], isset($latest[$address]['balance']) ? $latest[$address]['balance'] : 0, 0));
-		if(updateBalance($serverName, $address, $current, $unpaid, $paid)) $ok++;
+		$credit = isset($balances[$address]['credit']) ? satoshiToBTC($balances[$address]['credit']) : 0.0;
+		if(updateBalance($serverName, $address, $current, $unpaid, $credit, $paid)) $ok++;
 		else $failed++;
 
 		if($tickCallback !== null) call_user_func($tickCallback, $address);
@@ -631,8 +635,9 @@ function getBalance($apiRoot, $address) {
 	$paid = isset($latest[$address]['everpaid']) ? satoshiToBTC($latest[$address]['everpaid']) : 0.0;
 	$unpaid = isset($latest[$address]['balance']) ? satoshiToBTC($latest[$address]['balance']) : 0.0;
 	$current = satoshiToBTC(bcsub($balances[$address]['balance'], isset($latest[$address]['balance']) ? $latest[$address]['balance'] : 0, 0));
+	$credit = isset($balances[$address]['credit']) ? satoshiToBTC($balances[$address]['credit']) : 0.0;
 
-	return array($paid, $unpaid, $current);
+	return array($paid, $unpaid, $current, $credit);
 }
 
 /**
