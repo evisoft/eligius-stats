@@ -32,7 +32,7 @@ a lot of space.
 Recommended crontab :
 
 	0    * * * * /path/to/cli.update.php pool_hashrates
-	*/30 * * * * /path/to/cli.update.php block_metadata
 	*/15 * * * * /path/to/cli.update.php balances random_addresses individual_hashrates top_contributors
+	*/10 * * * * /path/to/cli.update.php block_metadata
 	*/3  * * * * /path/to/cli.update.php average_hashrates
 	*    * * * * /path/to/cli.update.php pool_status blocks instant_rate

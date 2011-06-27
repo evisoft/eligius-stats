@@ -116,7 +116,7 @@ function showBlocks($address = null) {
 				echo "<td class=\"ralign\">$percentage</td>$reward";
 			}
 
-			echo prettyBlockStatus($r['valid']);
+			echo prettyBlockStatus($r['valid'], $r['when']);
 			echo "<td class=\"lalign\">$block</td></tr>\n";
 		}
 	}

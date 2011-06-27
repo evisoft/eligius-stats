@@ -169,7 +169,7 @@ function showRecentBlocks() {
 			$shares = ($r['shares_total'] !== null) ? prettyInt($r['shares_total']) : '<small>N/A</small>';
 			$server = $SERVERS[$r['server']][0];
 			$block = '<a href="http://blockexplorer.com/block/'.$r['hash'].'" title="'.$hash.'">…'.substr($hash, -25).'</a>';
-			$status = prettyBlockStatus($r['valid']);
+			$status = prettyBlockStatus($r['valid'], $r['when']);
 			$statusClass = getRowClassForBlock($r['valid']);
 
 			if(isset($r['duration'])) {

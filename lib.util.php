@@ -17,6 +17,8 @@
 
 namespace Artefact2\EligiusStats;
 
+const FRESH_BLOCK_THRESHOLD = 600;
+
 const DATA_RELATIVE_ROOT = 'json';
 const DATA_SUFFIX = '.json';
 
@@ -433,10 +435,13 @@ function prettyInvalidReason($reason) {
 /**
  * Format the status of a block.
  * @param mixed $s the status of the block.
+ * @param int $when when was the block found?
  * @return string formatted block status.
  */
-function prettyBlockStatus($s) {
-	if($s === true) {
+function prettyBlockStatus($s, $when = null) {
+	if($when !== null && (time() - $when) < FRESH_BLOCK_THRESHOLD) {
+		return '<td class="unconfirmed" title="It is too soon to try to determine the status of this block."><span>???</span></td>';
+	} else if($s === true) {
 		return '<td>Valid</td>';
 	} else if(isset($s) && $s === false) {
 		return '<td>Invalid</td>';
