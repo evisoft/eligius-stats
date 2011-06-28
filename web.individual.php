@@ -119,7 +119,7 @@ function showBalanceGraph($server, $address) {
 	$paidUri = '../'.DATA_RELATIVE_ROOT.'/'.T_BALANCE_ALREADY_PAID.'_'.$server.'_'.$address.DATA_SUFFIX;
 	$unpaidUri = '../'.DATA_RELATIVE_ROOT.'/'.T_BALANCE_UNPAID_REWARD.'_'.$server.'_'.$address.DATA_SUFFIX;
 	$currentUri = '../'.DATA_RELATIVE_ROOT.'/'.T_BALANCE_CURRENT_BLOCK.'_'.$server.'_'.$address.DATA_SUFFIX;
-	//$ticks = makeTicks();
+	$creditUri = '../'.DATA_RELATIVE_ROOT.'/'.T_BALANCE_CREDIT.'_'.$server.'_'.$address.DATA_SUFFIX;
 
 	if(getPrefferedMonetaryUnit() == 'TBC') {
 		$font = ', font: { style: "normal", variant: "normal", weight: "normal", size: 10, family: "LuxiMonoTonal" } ';
@@ -141,23 +141,23 @@ var options = {
 $.get("$paidUri", "", function(data, textStatus, xhr) {
 	var alreadyPaid = data;
 	options.yaxis.min = data[EligiusUtils.findDataMin(data)][1];
-	series.push({ data: data, label: "Already paid", color: "#062270" });
+	series.push({ data: data, label: "Already paid", color: "#006133", lines: { lineWidth: 0 } });
 	$.plot($('#eligius_balance'), series, options);
 
 	$.get("$unpaidUri", "", function(data, textStatus, xhr) {
 		var unpaid = data;
-		series.push({ data: data, label: "Unpaid reward", color: "#6D89D5" });
+		series.push({ data: data, label: "Unpaid reward", color: "#21825B", lines: { lineWidth: 0.5 } });
 		$.plot($('#eligius_balance'), series, options);
 
 		$.get("$currentUri", "", function(data, textStatus, xhr) {
-			series.push({ data: data, label: "Current block estimate", color: "#FFE040" });
+			var currentEstimate = data;
 			options.yaxis.max = data[EligiusUtils.findDataMax(data)][1] + alreadyPaid[alreadyPaid.length - 1][1] + unpaid[unpaid.length - 1][1];
-
 			options.yaxis.min = Math.max(0, options.yaxis.min - (options.yaxis.max - options.yaxis.min) * 0.05);
 			options.yaxis.max = options.yaxis.max + (options.yaxis.max - options.yaxis.min) * 0.10;
-
-			series.push({ data: EligiusUtils.splitHorizontalLine(EligiusUtils.shiftData(alreadyPaid, 1.0)), label: "Payout threshold", color: "#FF0000", lines: { fill: false }, stack: false });
+			series.push({ data: data, label: "Current block estimate", color: "#3F8FD2"  });
 			$.plot($('#eligius_balance'), series, options);
+
+			series.push({ data: EligiusUtils.splitHorizontalLine(EligiusUtils.shiftData(alreadyPaid, 0.33554432)), label: "Payout threshold", color: "#FF0000", lines: { fill: false }, stack: false });
 
 			var maxZoomT = 600000;
 			var maxZoomY = 0.005;
@@ -176,6 +176,13 @@ $.get("$paidUri", "", function(data, textStatus, xhr) {
 
 			$("#eligius_balance").dblclick(function() {
 				$.plot($('#eligius_balance'), series, options);
+			});
+
+			$.get("$creditUri", "", function(data, textStatus, xhr) {
+				series.push({ data: data, label: "Maximum reward", color: "#FF9999", lines: { lineWidth: 0 }  });
+				$.plot($('#eligius_balance'), series, options);
+			}).error(function() {
+				$('#eligius_balance_errors').append('<p>An error happened while loading the "credit" data.<br />Try reloading the page.</p>');
 			});
 		}, "json").error(function() {
 			$('#eligius_balance_errors').append('<p>An error happened while loading the "current block estimate" data.<br />Try reloading the page.</p>');
