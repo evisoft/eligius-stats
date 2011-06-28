@@ -80,7 +80,7 @@ function updatePoolHashrate($serverName) {
 		SELECT ((COUNT(*) * POW(2, 32)) / ".HASHRATE_PERIOD_LONG.")
 		FROM shares
 		WHERE our_result <> 'N'
-			AND server = '$serverName'
+			AND server = $serverName
 			AND time BETWEEN $start AND $end
 	");
 	$hashrate = mysql_result($hashrate, 0, 0);
@@ -244,7 +244,7 @@ function updateInstantShareCount($server) {
 				SELECT COUNT(id) AS total, MAX(id) AS lastid
 				FROM shares
 				WHERE time BETWEEN $start AND $end
-					AND server = '$server'
+					AND server = $server
 					AND our_result <> 'N'"
 			);
 			$q = mysql_fetch_assoc($q);
@@ -258,7 +258,7 @@ function updateInstantShareCount($server) {
 				SELECT COUNT(id) / ($end - $start) AS rate
 				FROM shares
 				WHERE time BETWEEN ($start + 1) AND $end
-					AND server = '$server'
+					AND server = $server
 					AND our_result <> 'N'"
 			);
 			$q = mysql_fetch_assoc($q);
@@ -272,7 +272,7 @@ function updateInstantShareCount($server) {
 				SELECT COUNT(id) AS total, MAX(id) AS lastid
 				FROM shares
 				WHERE time <= $end
-					AND server = '$server'
+					AND server = $server
 					AND id > $thresholdID
 					AND our_result <> 'N'"
 			);
@@ -287,7 +287,7 @@ function updateInstantShareCount($server) {
 				SELECT COUNT(id) / ($end - $start) AS rate
 				FROM shares
 				WHERE time BETWEEN $start AND $end
-					AND server = '$server'
+					AND server = $server
 					AND our_result <> 'N'"
 			);
 			$q = mysql_fetch_assoc($q);
@@ -476,7 +476,7 @@ function updateBlocks($server, $apiRoot) {
 			SELECT username, COUNT(*) AS fshares
 			FROM shares
 			WHERE our_result <> 'N'
-				AND server = '$server'
+				AND server = $server
 				AND time BETWEEN $start AND $end
 			GROUP BY username
 		");
@@ -530,7 +530,7 @@ function getIndividualHashrates($serverName) {
 		SELECT username AS address, ((COUNT(*) * POW(2, 32)) / ".HASHRATE_PERIOD.") AS hashrate
 		FROM shares
 		WHERE our_result <> 'N'
-			AND server = '$serverName'
+			AND server = $serverName
 			AND time BETWEEN $start AND $end
 		GROUP BY username
 	");

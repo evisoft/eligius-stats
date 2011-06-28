@@ -35,7 +35,7 @@ foreach($SERVERS as $name => $data) {
 			SELECT ((COUNT(*) * POW(2, 32)) / ".INTERVAL.") AS hashrate
 			FROM shares
 			WHERE our_result <> 'N'
-				AND server = '$name'
+				AND server = $name
 				AND time BETWEEN $start AND $end
 		");
 

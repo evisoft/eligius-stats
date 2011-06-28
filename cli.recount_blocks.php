@@ -53,7 +53,7 @@ function recountBlock($server, &$bData) {
 		SELECT username, COUNT(*) AS fshares
 		FROM shares
 		WHERE our_result <> 'N'
-			AND server = '$server'
+			AND server = $server
 			AND time BETWEEN $start AND $end
 		GROUP BY username
 	");

@@ -39,7 +39,7 @@ foreach($SERVERS as $name => $data) {
 			SELECT username AS address, ((COUNT(*) * POW(2, 32)) / ".INTERVAL.") AS hashrate
 			FROM shares
 			WHERE our_result <> 'N'
-				AND server = '$name'
+				AND server = $name
 				AND time BETWEEN $start AND $end
 			GROUP BY address
 		");
@@ -51,7 +51,7 @@ foreach($SERVERS as $name => $data) {
 
 			$row[$address] = $hashrate;
 		}
-		
+
 		foreach($addresses as $address) {
 			$hashrate = isset($row[$address]) ? $row[$address] : 0;
 			$rates[$address][] = array($current, $hashrate);
@@ -60,7 +60,7 @@ foreach($SERVERS as $name => $data) {
 		$current += INTERVAL;
 		echo '.';
 	}
-	
+
 	foreach($rates as $address => $entries) {
 		truncateData(T_HASHRATE_INDIVIDUAL, $F = $name.'_'.$address);
 		updateDataBulk(T_HASHRATE_INDIVIDUAL, $F, $entries, TIMESPAN_SHORT);
