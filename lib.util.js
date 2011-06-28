@@ -61,6 +61,8 @@ EligiusUtils.formatTBC = function(money, axis) {
 
 	if(dec.length > 0) s = s + "." + dec;
 
+	if(s == "") s = '0.00';
+
 	return s + " TBC";
 }
 
