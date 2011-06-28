@@ -31,7 +31,7 @@ foreach($SERVERS as $name => $data) {
 	while($current < $now - INTERVAL) {
 		$start = $current;
 		$end = $current + INTERVAL;
-		$hashrate = mysql_query($q = "
+		$hashrate = sqlQuery($q = "
 			SELECT ((COUNT(*) * POW(2, 32)) / ".INTERVAL.") AS hashrate
 			FROM shares
 			WHERE our_result <> 'N'
@@ -39,7 +39,7 @@ foreach($SERVERS as $name => $data) {
 				AND time BETWEEN $start AND $end
 		");
 
-		$hashrate = mysql_fetch_assoc($hashrate);
+		$hashrate = fetchAssoc($hashrate);
 		$hashrate = $hashrate['hashrate'];
 
 		$rates[] = array($current, $hashrate);

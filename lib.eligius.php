@@ -76,14 +76,15 @@ if(!isset($_SESSION['tok'])) {
 function updatePoolHashrate($serverName) {
 	$end = time() - HASHRATE_LAG;
 	$start = $end - HASHRATE_PERIOD_LONG;
-	$hashrate = mysql_query("
-		SELECT ((COUNT(*) * POW(2, 32)) / ".HASHRATE_PERIOD_LONG.")
+	$hashrate = sqlQuery("
+		SELECT ((COUNT(*) * POW(2, 32)) / ".HASHRATE_PERIOD_LONG.") AS hashrate
 		FROM shares
 		WHERE our_result <> 'N'
 			AND server = $serverName
 			AND time BETWEEN $start AND $end
 	");
-	$hashrate = mysql_result($hashrate, 0, 0);
+	$hashrate = fetchAssoc($hashrate);
+	$hashrate = $hashrate['hashrate'];
 
 	return updateData(T_HASHRATE_POOL, $serverName, null, $hashrate, TIMESPAN_LONG);
 }
@@ -240,35 +241,35 @@ function updateInstantShareCount($server) {
 			$now = time();
 			$end = $now - HASHRATE_LAG;
 			$start = $lastBlockTimestamp ?: "0";
-			$q = mysql_query("
+			$q = sqlQuery("
 				SELECT COUNT(id) AS total, MAX(id) AS lastid
 				FROM shares
 				WHERE time BETWEEN $start AND $end
 					AND server = $server
 					AND our_result <> 'N'"
 			);
-			$q = mysql_fetch_assoc($q);
+			$q = fetchAssoc($q);
 
 			$instant[$server]['totalShares'] = $q['total'];
 			$instant[$server]['lastUpdated'] = $now;
 			$instant[$server]['lastID'] = $q['lastid'];
 
 			$start = $end - INSTANT_COUNT_PERIOD;
-			$q = mysql_query("
+			$q = sqlQuery("
 				SELECT COUNT(id) / ($end - $start) AS rate
 				FROM shares
 				WHERE time BETWEEN ($start + 1) AND $end
 					AND server = $server
 					AND our_result <> 'N'"
 			);
-			$q = mysql_fetch_assoc($q);
+			$q = fetchAssoc($q);
 
 			$instant[$server]['instantRate'] = $q['rate'];
 		} else {
 			$now = time();
 			$end = $now - HASHRATE_LAG;
 			$thresholdID = $instant[$server]['lastID'];
-			$q = mysql_query("
+			$q = sqlQuery("
 				SELECT COUNT(id) AS total, MAX(id) AS lastid
 				FROM shares
 				WHERE time <= $end
@@ -276,21 +277,21 @@ function updateInstantShareCount($server) {
 					AND id > $thresholdID
 					AND our_result <> 'N'"
 			);
-			$q = mysql_fetch_assoc($q);
+			$q = fetchAssoc($q);
 
 			$instant[$server]['totalShares'] += $q['total'];
 			$instant[$server]['lastUpdated'] = $now;
 			if($q['lastid'] > 0) $instant[$server]['lastID'] = $q['lastid'];
 
 			$start = $end - INSTANT_COUNT_PERIOD;
-			$q = mysql_query("
+			$q = sqlQuery("
 				SELECT COUNT(id) / ($end - $start) AS rate
 				FROM shares
 				WHERE time BETWEEN $start AND $end
 					AND server = $server
 					AND our_result <> 'N'"
 			);
-			$q = mysql_fetch_assoc($q);
+			$q = fetchAssoc($q);
 
 			$instant[$server]['instantRate'] = $q['rate'];
 		}
@@ -310,7 +311,7 @@ function updateTopContributors() {
 	$end = time() - HASHRATE_LAG;
 	$start = $end - HASHRATE_AVERAGE;
 
-	$q = mysql_query("
+	$q = sqlQuery("
 		SELECT server, username AS address, ((COUNT(*) * POW(2, 32)) / ".HASHRATE_AVERAGE.") AS hashrate
 		FROM shares
 		WHERE time BETWEEN $start AND $end
@@ -320,7 +321,7 @@ function updateTopContributors() {
 	);
 
 	$top = array();
-	while($t = mysql_fetch_assoc($q)) {
+	while($t = fetchAssoc($q)) {
 		$top[] = $t;
 	}
 
@@ -351,14 +352,15 @@ function updateAverageHashrates() {
 	$end = time() - HASHRATE_LAG;
 
 	$wStart = time() - HASHRATE_LAG - 60;
-	$isWorking = mysql_query("
+	$isWorking = sqlQuery("
 		SELECT COUNT(*) AS shares
 		FROM shares
 		WHERE our_result <> 'N'
 			AND time >= $wStart
 		LIMIT 1
 	");
-	$isWorking = mysql_result($isWorking, 0, 0);
+	$isWorking = fetchAssoc($isWorking);
+	$isWorking = $isWorking['shares'];
 	if($isWorking == 0) {
 		$averages3h = array();
 		$averages15min = array();
@@ -367,7 +369,7 @@ function updateAverageHashrates() {
 		$averages15min = array();
 
 		$start = $end - HASHRATE_AVERAGE;
-		$q = mysql_query("
+		$q = sqlQuery("
 			SELECT username AS address, server, COUNT(*) AS shares
 			FROM shares
 			WHERE our_result <> 'N'
@@ -376,13 +378,13 @@ function updateAverageHashrates() {
 			ORDER BY time DESC
 		");
 
-		while($r = mysql_fetch_assoc($q)) {
+		while($r = fetchAssoc($q)) {
 			$rate = floatval(bcdiv(bcmul($r['shares'], bcpow(2, 32)), HASHRATE_AVERAGE));
 			$averages3h['valid'][$r['server']][$r['address']] = array($r['shares'], $rate);
 		}
 
 		$start = $end - HASHRATE_AVERAGE_SHORT;
-		$q = mysql_query("
+		$q = sqlQuery("
 			SELECT username AS address, server, COUNT(*) AS shares
 			FROM shares
 			WHERE our_result <> 'N'
@@ -391,13 +393,13 @@ function updateAverageHashrates() {
 			ORDER BY time DESC
 		");
 
-		while($r = mysql_fetch_assoc($q)) {
+		while($r = fetchAssoc($q)) {
 			$rate = floatval(bcdiv(bcmul($r['shares'], bcpow(2, 32)), HASHRATE_AVERAGE_SHORT));
 			$averages15min['valid'][$r['server']][$r['address']] = array($r['shares'], $rate);
 		}
 
 		$start = $end - HASHRATE_AVERAGE;
-		$q = mysql_query("
+		$q = sqlQuery("
 			SELECT username AS address, server, COUNT(*) AS shares, reason
 			FROM shares
 			WHERE our_result <> 'Y'
@@ -406,12 +408,12 @@ function updateAverageHashrates() {
 			ORDER BY time DESC
 		");
 
-		while($r = mysql_fetch_assoc($q)) {
+		while($r = fetchAssoc($q)) {
 			$averages3h['invalid'][$r['server']][$r['address']][$r['reason']] = $r['shares'];
 		}
 
 		$start = $end - HASHRATE_AVERAGE_SHORT;
-		$q = mysql_query("
+		$q = sqlQuery("
 			SELECT username AS address, server, COUNT(*) AS shares, reason
 			FROM shares
 			WHERE our_result <> 'Y'
@@ -420,7 +422,7 @@ function updateAverageHashrates() {
 			ORDER BY time DESC
 		");
 
-		while($r = mysql_fetch_assoc($q)) {
+		while($r = fetchAssoc($q)) {
 			$averages15min['invalid'][$r['server']][$r['address']][$r['reason']] = $r['shares'];
 		}
 	}
@@ -472,7 +474,7 @@ function updateBlocks($server, $apiRoot) {
 
 		$start = ($i < ($c - 1)) ? ($foundAt[$i + 1]) : 0;
 		$end = $foundAt[$i];
-		$q = mysql_query("
+		$q = sqlQuery("
 			SELECT username, COUNT(*) AS fshares
 			FROM shares
 			WHERE our_result <> 'N'
@@ -482,7 +484,7 @@ function updateBlocks($server, $apiRoot) {
 		");
 
 		$bData['shares_total'] = 0;
-		while($r = mysql_fetch_assoc($q)) {
+		while($r = fetchAssoc($q)) {
 			$bData['shares_total'] += $r['fshares'];
 			$bData['shares'][$r['username']] = $r['fshares'];
 		}
@@ -490,7 +492,7 @@ function updateBlocks($server, $apiRoot) {
 		$json = json_decode_safe($blocks[$i]);
 		foreach($json as $address => $row) {
 			if(isset($row['earned'])) {
-				$bData['rewards'][$address] = satoshiToBTC($row['earned']);
+				$bData['rewards'][$address] = rawSatoshiToBTC($row['earned']);
 			}
 		}
 
@@ -526,7 +528,7 @@ function updateBlocks($server, $apiRoot) {
 function getIndividualHashrates($serverName) {
 	$end = time() - HASHRATE_LAG;
 	$start = $end - HASHRATE_PERIOD;
-	$q = mysql_query("
+	$q = sqlQuery("
 		SELECT username AS address, ((COUNT(*) * POW(2, 32)) / ".HASHRATE_PERIOD.") AS hashrate
 		FROM shares
 		WHERE our_result <> 'N'
@@ -536,7 +538,7 @@ function getIndividualHashrates($serverName) {
 	");
 
 	$result = array();
-	while($r = mysql_fetch_assoc($q)) {
+	while($r = fetchAssoc($q)) {
 		$result[$r['address']] = $r['hashrate'];
 	}
 

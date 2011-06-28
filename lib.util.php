@@ -213,6 +213,11 @@ function satoshiToBTC($satoshi) {
 	return bcmul($satoshi, '0.00000001', 8).' BTC';
 }
 
+/**
+ * Convert a money amount from Satoshis to TBC.
+ * @param string|integer $satoshi amount of satoshis
+ * @return string specified amount in TBC
+ */
 function satoshiToTBC($satoshi) {
 	static $tonalAlphabet = array('0', '1', '2', '3', '4', '5', '6', '7', '8', '', '9', '', '', '', '', '');
 	$rem = bcmod($satoshi, '65536');
@@ -236,7 +241,7 @@ function satoshiToTBC($satoshi) {
 		$dec = $tonalAlphabet[intval($mod)].$dec;
 	}
 
-	$dec = rtrim($dec, '0');
+	$dec = str_pad($dec, 4, '0', STR_PAD_RIGHT);
 	if($dec != '') $result .= '.'.$dec;
 
 	if($result == '') $result = '0.0000';
@@ -244,20 +249,43 @@ function satoshiToTBC($satoshi) {
 	return '<span class="tfix">'.$result.'</span> TBC';
 }
 
+/**
+ * What unit should we use ?
+ * @return string TBC or BTC, according to settings.
+ */
 function getPrefferedMonetaryUnit() {
 	if(isset($_COOKIE['TBC']) && $_COOKIE['TBC']) {
 		return 'TBC';
 	} else return 'BTC';
 }
 
+/**
+ * Format an amount of satoshis in the currently preffered unit.
+ * @param string|integer $satoshis amount of satoshis
+ * @return string formatted amount
+ */
 function prettySatoshis($satoshis) {
 	if(getPrefferedMonetaryUnit() == 'TBC') {
 		return satoshiToTBC($satoshis);
 	} else return satoshiToBTC($satoshis);
 }
 
+/**
+ * Format a BTC amount in BTC.
+ * @param int|float|string $btc amount of BTC
+ * @return string formatted amount
+ */
 function prettyBTC($btc) {
 	return prettySatoshis(bcadd(0, bcdiv($btc, '0.00000001', 8), 0));
+}
+
+/**
+ * Convert from satoshis to BTC, but output the raw result as a floating number (with no " BTC" suffix).
+ * @param string|int|float $s amount of satoshis
+ * @return float raw formatted amount (no suffix)
+ */
+function rawSatoshiToBTC($s) {
+	return bcmul($s, '0.00000001', 8);
 }
 
 /**
@@ -540,4 +568,26 @@ function addMessage($m) {
  */
 function getCDF($shares, $difficulty) {
 	return 1.0 - exp(-$shares / $difficulty);
+}
+
+/**
+ * Execute a SQL query.
+ * @param string $q the query to execute
+ * @return \resource
+ */
+function sqlQuery($q) {
+	$r = mysql_query($q);
+	if($r === false) {
+		trigger_error("The following query failed : \n$r\n".mysql_error()."\n", E_USER_WARNING);
+	}
+	return $r;
+}
+
+/**
+ * Get the next row of a result returned by sqlQuery();
+ * @param \resource $r resource returned by sqlQuery()
+ * @return array row of data
+ */
+function fetchAssoc($r) {
+	return mysql_fetch_assoc($r);
 }

@@ -35,7 +35,7 @@ foreach($SERVERS as $name => $data) {
 	while($current < $now - INTERVAL) {
 		$start = $current;
 		$end = $current + INTERVAL;
-		$hashrates = mysql_query($q = "
+		$hashrates = sqlQuery($q = "
 			SELECT username AS address, ((COUNT(*) * POW(2, 32)) / ".INTERVAL.") AS hashrate
 			FROM shares
 			WHERE our_result <> 'N'
@@ -45,7 +45,7 @@ foreach($SERVERS as $name => $data) {
 		");
 
 		$row = array();
-		while($r = mysql_fetch_assoc($hashrates)) {
+		while($r = fetchAssoc($hashrates)) {
 			$hashrate = $r['hashrate'];
 			$address = $r['address'];
 

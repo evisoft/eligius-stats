@@ -49,7 +49,7 @@ function recountBlock($server, &$bData) {
 	$end = $bData['when'];
 	$start = $end - $bData['duration'];
 
-	$q = mysql_query("
+	$q = sqlQuery("
 		SELECT username, COUNT(*) AS fshares
 		FROM shares
 		WHERE our_result <> 'N'
@@ -60,7 +60,7 @@ function recountBlock($server, &$bData) {
 
 	$bData['shares_total'] = 0;
 	$bData['shares'] = array();
-	while($r = mysql_fetch_assoc($q)) {
+	while($r = fetchAssoc($q)) {
 		$bData['shares_total'] += $r['fshares'];
 		$bData['shares'][$r['username']] = $r['fshares'];
 	}
