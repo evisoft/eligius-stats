@@ -64,6 +64,9 @@ require __DIR__.'/lib.bitcoind.php';
 require __DIR__.'/inc.sql.php';
 
 session_start();
+if(!isset($_SESSION['tok'])) {
+	$_SESSION['tok'] = base64_encode(pack('H*', sha1(uniqid('Trololo', true).uniqid('Ujelly?', true))));
+}
 
 /**
  * Update the Pool's hashrate.
@@ -642,12 +645,13 @@ function getBalance($apiRoot, $address) {
 
 	if(!isset($balances[$address]['balance'])) return false;
 
-	$paid = isset($latest[$address]['everpaid']) ? satoshiToBTC($latest[$address]['everpaid']) : 0.0;
-	$unpaid = isset($latest[$address]['balance']) ? satoshiToBTC($latest[$address]['balance']) : 0.0;
-	$current = satoshiToBTC(bcsub($balances[$address]['balance'], isset($latest[$address]['balance']) ? $latest[$address]['balance'] : 0, 0));
-	$credit = isset($balances[$address]['credit']) ? satoshiToBTC($balances[$address]['credit']) : 0.0;
+	$paid = prettySatoshis(isset($latest[$address]['everpaid']) ? $latest[$address]['everpaid'] : 0);
+	$unpaid = prettySatoshis(isset($latest[$address]['balance']) ? $latest[$address]['balance'] : 0);
+	$current = prettySatoshis(bcsub($balances[$address]['balance'], isset($latest[$address]['balance']) ? $latest[$address]['balance'] : 0, 0));
+	$credit = prettySatoshis(isset($balances[$address]['credit']) ? $balances[$address]['credit'] : 0.0);
+	$total = prettySatoshis($balances[$address]['balance']);
 
-	return array($paid, $unpaid, $current, $credit);
+	return array($paid, $unpaid, $current, $credit, $total);
 }
 
 /**

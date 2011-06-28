@@ -100,22 +100,30 @@ function showHashrateAverage($server, $address) {
 }
 
 function showBalance($unpaid, $current) {
+	$thresh = '0.33554432';
+	$fThresh = prettyBTC($thresh);
+
 	echo <<<EOT
 <h2>Balance</h2>
 <ul>
-<li>Unpaid reward : <strong class="moremore">$unpaid BTC</strong><br />
-This is the reward you earned by contributing to the previous blocks. This amount will be paid to you when it reaches 1 BTC or after one week of inactivity, when the pool finds a block.</li>
-<li>Current block estimate : <strong class="moremore">$current BTC</strong><br />
-This is an <strong>estimation</strong> of the reward that you will earn when the pool finds the block it is currently working on. It can fluctuate over time, if your contribution relative to the pool's size changes. So, don't panic if it goes down a little !</li>
+<li>Unpaid reward : <strong class="moremore">$unpaid</strong><br />
+This is the reward you earned by contributing to the previous blocks. This amount will be paid to you when it reaches approximately $fThresh or after one week of inactivity, when the pool finds a block.</li>
+<li>Current block estimate : <strong class="moremore">$current</strong><br />
+This is an <strong>estimation</strong> of the reward that you will earn when the pool finds the block it is currently working on.</li>
 </ul>
 EOT;
 }
 
 function showBalanceGraph($server, $address) {
+	$unit = getPrefferedMonetaryUnit();
 	$paidUri = '../'.DATA_RELATIVE_ROOT.'/'.T_BALANCE_ALREADY_PAID.'_'.$server.'_'.$address.DATA_SUFFIX;
 	$unpaidUri = '../'.DATA_RELATIVE_ROOT.'/'.T_BALANCE_UNPAID_REWARD.'_'.$server.'_'.$address.DATA_SUFFIX;
 	$currentUri = '../'.DATA_RELATIVE_ROOT.'/'.T_BALANCE_CURRENT_BLOCK.'_'.$server.'_'.$address.DATA_SUFFIX;
 	//$ticks = makeTicks();
+
+	if(getPrefferedMonetaryUnit() == 'TBC') {
+		$font = ', font: { style: "normal", variant: "normal", weight: "normal", size: 10, family: "LuxiMonoTonal" } ';
+	} else $font = '';
 
 	echo "<div class=\"graph\">\n<div id=\"eligius_balance_errors\" class=\"errors\"></div>\n";
 	echo "<div id=\"eligius_balance\" style=\"width:700px;height:350px;\">You must enable Javascript to see the graph.</div>\n</div>\n";
@@ -125,7 +133,7 @@ function showBalanceGraph($server, $address) {
 var options = {
 	legend: { position: "nw" },
 	xaxis: { mode: "time", ticks: 5 },
-	yaxis: { position: "right", tickFormatter: EligiusUtils.formatBTC },
+	yaxis: { position: "right", tickFormatter: EligiusUtils.format$unit $font },
 	series: { lines: { fill: 0.3, steps: true }, stack: true },
 	selection: { mode: "xy" }
 };
@@ -222,9 +230,9 @@ function showRecentPayouts($server, $address) {
 
 			if($address !== null) {
 				if(isset($r['valid']) && $r['valid'] === false) {
-					$reward = '<td>0 BTC</td>';
+					$reward = '<td>'.prettyBTC(0).'</td>';
 				} else {
-					$reward = '<td>'.(isset($r['rewards'][$address]) ? $r['rewards'][$address] : "0").' BTC</td>';
+					$reward = '<td>'.(isset($r['rewards'][$address]) ? prettyBTC($r['rewards'][$address]) : prettyBTC(0)).'</td>';
 				}
 			}
 
@@ -319,9 +327,8 @@ if(!isset($SERVERS[$server])) {
 list($prettyName, $apiRoot) = $SERVERS[$server];
 $addresses = getActiveAddresses($apiRoot);
 
-list(, $unpaid, $current) = getBalance($apiRoot, $address);
-$total = bcadd($unpaid, $current, 8).' BTC';
-
+list(, $unpaid, $current, , $total) = getBalance($apiRoot, $address);
+$total = strip_tags($total);
 printHeader("($total) $address on $prettyName - Eligius pool", "$address on $prettyName", $relative = '..');
 
 if(!in_array($address, $addresses)) {

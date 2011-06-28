@@ -1,0 +1,18 @@
+@font-face {
+    font-family: 'LuxiMonoTonal';
+    src: url('luximono_tonal_ttf-webfont.eot');
+    src: url('luximono_tonal_ttf-webfont.eot?#iefix') format('embedded-opentype'),
+         url('luximono_tonal_ttf-webfont.woff') format('woff'),
+         url('luximono_tonal_ttf-webfont.ttf') format('truetype'),
+         url('luximono_tonal_ttf-webfont.svg#LuxiMonoRegular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+span.tfix {
+	font-family: LuxiMonoTonal !important;
+	font-size: 0.9em;
+	font-weight: normal !important;
+	font-style: normal !important;
+}

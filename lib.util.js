@@ -30,6 +30,40 @@ EligiusUtils.formatBTC = function(money, axis) {
 	return money.toFixed(3) + " BTC";
 }
 
+EligiusUtils.formatTBC = function(money, axis) {
+	money /= 0.00000001;
+	var rem = parseInt(money % 65536, 10);
+	money /= 65536;
+	money = parseInt(money, 10);
+
+	var tonalAlphabet = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "", "9", "", "", "", "", ""];
+	var r;
+	var s = "";
+	var dec = "";
+
+	while(money) {
+		r = money % 16;
+		money = (money - r) / 16;
+
+		s = tonalAlphabet[r] + s;
+	}
+
+	while(rem) {
+		r = rem % 16;
+		rem = (rem - r) / 16;
+
+		dec = tonalAlphabet[(r + 16) % 16] + dec;
+	}
+
+	while(dec.length > 0 && dec[dec.length - 1] == "0") {
+		dec = dec.substr(0, dec.length - 1);
+	}
+
+	if(dec.length > 0) s = s + "." + dec;
+
+	return s + " TBC";
+}
+
 EligiusUtils.toggleAutorefresh = function() {
 	if(EligiusUtils.autorefresh) {
 		EligiusUtils.autorefresh = false;

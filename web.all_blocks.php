@@ -109,9 +109,9 @@ function showBlocks($address = null) {
 
 			if($address !== null) {
 				if(isset($r['valid']) && $r['valid'] === false) {
-					$reward = '<td>0 BTC</td>';
+					$reward = '<td>'.prettyBTC(0).'</td>';
 				} else {
-					$reward = '<td>'.(isset($r['rewards'][$address]) ? $r['rewards'][$address] : "0").' BTC</td>';
+					$reward = '<td>'.(isset($r['rewards'][$address]) ? prettyBTC($r['rewards'][$address]) : prettyBTC(0)).'</td>';
 				}
 
 				echo "<td class=\"ralign\">$percentage</td>$reward";

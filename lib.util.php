@@ -210,7 +210,54 @@ function tryRepairJson($file) {
  * @return string the specified amount, in BTC.
  */
 function satoshiToBTC($satoshi) {
-	return bcmul($satoshi, "0.00000001", 8);
+	return bcmul($satoshi, '0.00000001', 8).' BTC';
+}
+
+function satoshiToTBC($satoshi) {
+	static $tonalAlphabet = array('0', '1', '2', '3', '4', '5', '6', '7', '8', '', '9', '', '', '', '', '');
+	$rem = bcmod($satoshi, '65536');
+	$satoshi = bcdiv($satoshi, '65536', 0);
+	$result = '';
+	$i = 0;
+	while($satoshi) {
+		++$i;
+
+		$mod = bcmod($satoshi, '16');
+		$satoshi = bcdiv($satoshi, '16', 0);
+
+		$result = $tonalAlphabet[intval($mod)].$result;
+	}
+
+	$dec = '';
+	while($rem) {
+		$mod = bcmod($rem, '16');
+		$rem = bcdiv($rem, '16', 0);
+
+		$dec = $tonalAlphabet[intval($mod)].$dec;
+	}
+
+	$dec = rtrim($dec, '0');
+	if($dec != '') $result .= '.'.$dec;
+
+	if($result == '') $result = '0.0000';
+
+	return '<span class="tfix">'.$result.'</span> TBC';
+}
+
+function getPrefferedMonetaryUnit() {
+	if(isset($_COOKIE['TBC']) && $_COOKIE['TBC']) {
+		return 'TBC';
+	} else return 'BTC';
+}
+
+function prettySatoshis($satoshis) {
+	if(getPrefferedMonetaryUnit() == 'TBC') {
+		return satoshiToTBC($satoshis);
+	} else return satoshiToBTC($satoshis);
+}
+
+function prettyBTC($btc) {
+	return prettySatoshis(bcadd(0, bcdiv($btc, '0.00000001', 8), 0));
 }
 
 /**
@@ -344,6 +391,7 @@ function printHeader($title, $shownTitle, $relativePathToRoot = '.', $includeJqu
 <link type="text/css" rel="stylesheet" href="$relativePathToRoot/web.theme.css">
 
 EOT;
+
 	if($includeJquery) echo <<<EOT
 <!--[if lte IE 8]><script type="text/javascript" src="$relativePathToRoot/flot/excanvas.min.js"></script><![endif]-->
 <script type="text/javascript" src="$relativePathToRoot/canvas-text/canvas.text.js"></script>
@@ -396,11 +444,14 @@ EOT;
  */
 function printFooter($relative, $more = '') {
 	$now = date('Y-m-d \a\t H:i:s');
+	$switch = $relative.'/__?tok='.urldecode($_SESSION['tok']).'&amp;back='.urlencode($_SERVER['REQUEST_URI']).'&amp;toggleTBC=1';
+	$newUnit = (getPrefferedMonetaryUnit() == 'BTC') ? 'TBC' : 'BTC';
 	echo <<<EOT
 <footer>
 <hr />
 <p style="float: right;">
 Page generated the $now UTC -
+<a href="$switch">Switch to $newUnit</a> -
 <a href="https://github.com/Artefact2/eligius-stats">Source</a> -
 <a href="http://eligius.st/">Eligius Wiki</a> -
 Donate to <a href="bitcoin:1666R5kdy7qK2RDALPJQ6Wt1czdvn61CQR">1666R5kdy7qK2RDALPJQ6Wt1czdvn61CQR</a> !
