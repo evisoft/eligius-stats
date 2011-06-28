@@ -233,6 +233,8 @@ function satoshiToTBC($satoshi) {
 		$result = $tonalAlphabet[intval($mod)].$result;
 	}
 
+	if($result == '') $result = '0';
+
 	$dec = '';
 	while($rem) {
 		$mod = bcmod($rem, '16');
