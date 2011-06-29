@@ -80,6 +80,37 @@ EligiusUtils.toggleAutorefresh = function() {
 	}
 }
 
+EligiusUtils.lcsToggleCookie = function(selector, cookieName, labelOn, labelOff) {
+	var newValue;
+	if($.cookie("a2_" + cookieName) == "1") {
+		newValue = "0";
+	} else newValue = "1";
+
+	$.cookie("a2_" + cookieName, newValue, { expires: 30, path: '/' });
+	EligiusUtils.lcsUpdateContent(selector, cookieName, labelOn, labelOff);
+}
+
+EligiusUtils.lcsUpdateContent = function(selector, cookieName, labelOn, labelOff) {
+	$(selector).attr('disabled', 'disabled');
+	$(selector).animate({opacity: 0}, 250, 'swing', function() {
+
+		EligiusUtils.lcsUpdateContentRaw(selector, cookieName, labelOn, labelOff);
+
+		$(selector).animate({opacity: 1}, 250, 'swing', function() {
+			$(selector).attr('disabled', '');
+		});
+
+	});
+}
+
+EligiusUtils.lcsUpdateContentRaw = function(selector, cookieName, labelOn, labelOff) {
+	if($.cookie("a2_" + cookieName) == "1") {
+		$(selector).val(labelOn);
+	} else {
+		$(selector).val(labelOff);
+	}
+}
+
 EligiusUtils.movingAverage = function(data, window, interval) {
 	var points = [];
 	var c = data.length;
@@ -266,8 +297,13 @@ EligiusUtils.initShareCounter = function(servers) {
 		}
 
 		setInterval(periodicRefresh, 60000);
-		setInterval(updateCounts, 60000);
-		requestAnimFrame(magic);
+
+		if($.cookie("a2_noanim") == "1") {
+			setInterval(updateCounts, 250);
+		} else {
+			setInterval(updateCounts, 60000);
+			requestAnimFrame(magic);
+		}
 	}, "json");
 }
 

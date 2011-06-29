@@ -12,4 +12,4 @@ RewriteRule ^/?contrib?$ web.rank_list.php [L]
 
 RewriteRule ^/?authenticate$ web.authentify.php [L]
 RewriteRule ^/?individualSettings$ web.individual_settings.php [L]
-RewriteRule ^/?__ web.s_cookie.php [L,QSA]
+RewriteRule ^/?noauthSettings$ web.noauth_settings.php [L]

@@ -256,7 +256,7 @@ function satoshiToTBC($satoshi) {
  * @return string TBC or BTC, according to settings.
  */
 function getPrefferedMonetaryUnit() {
-	if(isset($_COOKIE['TBC']) && $_COOKIE['TBC']) {
+	if(isset($_COOKIE['a2_tbc']) && $_COOKIE['a2_tbc']) {
 		return 'TBC';
 	} else return 'BTC';
 }
@@ -474,14 +474,12 @@ EOT;
  */
 function printFooter($relative, $more = '') {
 	$now = date('Y-m-d \a\t H:i:s');
-	$switch = $relative.'/__?tok='.urldecode($_SESSION['tok']).'&amp;back='.urlencode($_SERVER['REQUEST_URI']).'&amp;toggleTBC=1';
-	$newUnit = (getPrefferedMonetaryUnit() == 'BTC') ? 'TBC' : 'BTC';
 	echo <<<EOT
 <footer>
 <hr />
 <p style="float: right;">
 Page generated the $now UTC -
-<a href="$switch">Switch to $newUnit</a> -
+<a href="$relative/noauthSettings">Local settings</a> -
 <a href="https://github.com/Artefact2/eligius-stats">Source</a> -
 <a href="http://eligius.st/">Eligius Wiki</a> -
 Donate to <a href="bitcoin:1666R5kdy7qK2RDALPJQ6Wt1czdvn61CQR">1666R5kdy7qK2RDALPJQ6Wt1czdvn61CQR</a> !
@@ -490,7 +488,7 @@ EOT;
 	if(file_exists(__DIR__.'/inc.analytics.php')) {
 		require __DIR__.'/inc.analytics.php';
 	}
-	if($relative != '.') {
+	if($relative != '.' || (strrpos($_SERVER['REQUEST_URI'], '/') + 1) != strlen($_SERVER['REQUEST_URI'])) {
 		echo "<p><a href=\"$relative/\">&larr; Get back to the main page</a></p>\n";
 	}
 	echo <<<EOT

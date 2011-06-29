@@ -41,7 +41,7 @@ if(isset($_SESSION['POST']['logout'])) {
 	die();
 }
 
-printHeader("Change my settings ($address)", "Change my settings ($address)", $relative = '.');
+printHeader("Change settings of address $address", "Change settings of address $address", $relative = '.');
 
 echo <<<EOT
 <form method="POST" action="">
