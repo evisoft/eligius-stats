@@ -164,6 +164,8 @@ function updateAllBalancesOnServer($serverName, $apiRoot, $tickCallback = null) 
 	$latest = json_decode_safe($apiRoot.'/blocks/latest.json');
 
 	foreach($balances as $address => $data) {
+		if(!$address) continue; /* Filter the "" entry, which represents the pool. */
+
 		$paid = isset($latest[$address]['everpaid']) ? satoshiToBTC($latest[$address]['everpaid']) : 0.0;
 		$unpaid = isset($latest[$address]['balance']) ? satoshiToBTC($latest[$address]['balance']) : 0.0;
 		$current = satoshiToBTC(bcsub($balances[$address]['balance'], isset($latest[$address]['balance']) ? $latest[$address]['balance'] : 0, 0));
