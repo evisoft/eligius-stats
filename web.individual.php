@@ -79,6 +79,9 @@ function showHashrateAverage($server, $address) {
 			$rjClass = ' class="tsep" style="border-color: #888;"';
 		} else $rjClass = '';
 
+		$sharesLong = prettyInt($sharesLong);
+		$sharesShort = prettyInt($sharesShort);
+
 		echo "<tr><td>Hashrate</td><td$lClass><strong class=\"moremore\">$long</strong></td><td$sClass>$short</td></tr>\n";
 		echo "<tr class=\"bsep\"><td>Submitted valid shares</td><td$lClass>$sharesLong</td><td$sClass>$sharesShort</td></tr>\n";
 
@@ -88,6 +91,9 @@ function showHashrateAverage($server, $address) {
 			$reason = prettyInvalidReason($reason).'s';
 			echo "<tr><td>Submitted $reason</td><td>$L</td><td>$S</td></tr>\n";
 		}
+
+		$rejectedSharesLong = prettyint($rejectedSharesLong);
+		$rejectedSharesShort = prettyInt($rejectedSharesShort);
 
 		echo "<tr$rjClass><td>Total submitted invalid shares</td><td>$rejectedSharesLong ($rejectedSharesLongPercentage)</td><td>$rejectedSharesShort ($rejectedSharesShortPercentage)</td></tr>\n";
 	}

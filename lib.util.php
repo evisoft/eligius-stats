@@ -336,10 +336,10 @@ function prettyDuration($duration, $align = false, $precision = 4) {
  */
 function prettyHashrate($hps) {
 	if($hps < 10000000) {
-		return number_format($hps / 1000, 2).' Khashes/sec';
+		return number_format($hps / 1000, 2).' KH/s';
 	} else if($hps < 10000000000) {
-		return number_format($hps / 1000000, 2).' Mhashes/sec';
-	} else return number_format($hps / 1000000000, 2).' Ghashes/sec';
+		return number_format($hps / 1000000, 2).' MH/s';
+	} else return number_format($hps / 1000000000, 2).' GH/s';
 }
 
 /**

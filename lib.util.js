@@ -18,12 +18,12 @@ var EligiusUtils = {};
 
 EligiusUtils.formatHashrate = function(rate, axis) {
 	if(rate == 0) {
-		return "0 Hashes/sec";
+		return "0 H/s";
 	} else if(rate < 10 * 1000000) {
-		return (rate / 1000).toFixed(2) + " Khashes/sec";
+		return (rate / 1000).toFixed(2) + " KH/s";
 	} else if(rate < 10 * 1000000000) {
-		return (rate / 1000000).toFixed(2) + " Mhashes/sec";
-	} else return (rate / 1000000000).toFixed(2) + " Ghashes/sec";
+		return (rate / 1000000).toFixed(2) + " MH/s";
+	} else return (rate / 1000000000).toFixed(2) + " GH/s";
 }
 
 EligiusUtils.formatBTC = function(money, axis) {
@@ -250,7 +250,6 @@ EligiusUtils.initShareCounter = function(servers) {
 				difficulty = data.difficulty;
 			}, "json");
 		}
-		setInterval(periodicRefresh, 60000);
 		var updateCounts = function() {
 			t = 0.001 * (new Date().getTime() + __clockOffset);
 			for(i = 0; i < c; ++i) {
@@ -260,7 +259,60 @@ EligiusUtils.initShareCounter = function(servers) {
 				$("#instant_scount_" + name).html(EligiusUtils.formatNumber(totals[name].toFixed(0)));
 				$("#instant_cdf_" + name).html((EligiusUtils.getCDF(totals[name], difficulty) * 100).toFixed(3));
 			}
+		};
+		var magic = function() {
+			updateCounts();
+			requestAnimFrame(magic);
 		}
-		setInterval(updateCounts, 30);
+
+		setInterval(periodicRefresh, 60000);
+		setInterval(updateCounts, 60000);
+		requestAnimFrame(magic);
 	}, "json");
 }
+
+/* -------------------------------------------------------------------------------------------------------------------*/
+/*
+ * Copyright 2010, Google Inc.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the
+ * distribution.
+ *     * Neither the name of Google Inc. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/**
+ * Provides requestAnimationFrame in a cross browser way.
+ */
+window.requestAnimFrame = (function() {
+  return window.requestAnimationFrame ||
+         window.webkitRequestAnimationFrame ||
+         window.mozRequestAnimationFrame ||
+         window.oRequestAnimationFrame ||
+         window.msRequestAnimationFrame ||
+         function(/* function FrameRequestCallback */ callback, /* DOMElement Element */ element) {
+           window.setTimeout(callback, 1000/60);
+         };
+})();
