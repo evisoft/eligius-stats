@@ -521,7 +521,7 @@ function prettyInvalidReason($reason) {
  */
 function prettyBlockStatus($s, $when = null) {
 	if($when !== null && (time() - $when) < FRESH_BLOCK_THRESHOLD) {
-		return '<td class="unconfirmed" title="It is too soon to try to determine the status of this block."><span>???</span></td>';
+		return '<td class="unconfirmed conf9" title="It is too soon to try to determine the status of this block."><span>???</span></td>';
 	} else if($s === true) {
 		return '<td>Valid</td>';
 	} else if(isset($s) && $s === false) {
