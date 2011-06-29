@@ -141,12 +141,12 @@ var options = {
 $.get("$paidUri", "", function(data, textStatus, xhr) {
 	var alreadyPaid = data;
 	options.yaxis.min = data[EligiusUtils.findDataMin(data)][1];
-	series.push({ data: data, label: "Already paid", color: "#006133", lines: { lineWidth: 0 } });
+	series.push({ data: data, label: "Already paid", color: "#00411C", lines: { lineWidth: 0.5 } });
 	$.plot($('#eligius_balance'), series, options);
 
 	$.get("$unpaidUri", "", function(data, textStatus, xhr) {
 		var unpaid = data;
-		series.push({ data: data, label: "Unpaid reward", color: "#21825B", lines: { lineWidth: 0.5 } });
+		series.push({ data: data, label: "Unpaid reward", color: "#31926B", lines: { lineWidth: 0.5 } });
 		$.plot($('#eligius_balance'), series, options);
 
 		$.get("$currentUri", "", function(data, textStatus, xhr) {
