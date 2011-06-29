@@ -250,7 +250,7 @@ EligiusUtils.formatNumber = function(num) {
 }
 
 EligiusUtils.getCDF = function(shares, difficulty) {
-	return 1.0 - Math.exp(-shares / difficulty);
+	return 1.0 - Math.exp(-__shareDiff * shares / difficulty);
 }
 
 EligiusUtils.initShareCounter = function(servers) {

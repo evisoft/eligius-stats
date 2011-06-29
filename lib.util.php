@@ -18,6 +18,7 @@
 namespace Artefact2\EligiusStats;
 
 const FRESH_BLOCK_THRESHOLD = 600;
+const SHARE_DIFF = 0.999984741210937500000000000000000000000000000000000000000000000000037091495526931787187794383295520714646689355129378026328393541675746568232157348440782664046922186356528849561891415710665458082566072220046505;
 
 const DATA_RELATIVE_ROOT = 'json';
 const DATA_SUFFIX = '.json';
@@ -413,6 +414,7 @@ function extractTime($d) {
  */
 function printHeader($title, $shownTitle, $relativePathToRoot = '.', $includeJquery = true) {
 	$millis = 1000 * microtime(true) + 300; /* ~0.3s page load time */
+	$shareDiff = SHARE_DIFF;
 	echo <<<EOT
 <!DOCTYPE html>
 <html>
@@ -433,6 +435,7 @@ EOT;
 <script type="text/javascript" src="$relativePathToRoot/jquery-cookie/jquery.cookie.js"></script>
 <script type="text/javascript">
 var __clockOffset = $millis - new Date().getTime();
+var __shareDiff = $shareDiff;
 </script>
 
 EOT;
@@ -569,7 +572,7 @@ function addMessage($m) {
  * @return float the probability that a block should have been found given this number of shares
  */
 function getCDF($shares, $difficulty) {
-	return 1.0 - exp(-$shares / $difficulty);
+	return 1.0 - exp(- SHARE_DIFF * $shares / $difficulty);
 }
 
 /**
