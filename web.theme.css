@@ -5,11 +5,11 @@ body {
 	font-size: 0.9em;
 }
 
-tr.row0 > td {
+tr.row0, tr.row0 > td {
 	background-color: #E8E8E8;
 }
 
-tr.row1 > td {
+tr.row1, tr.row1 > td {
 	background-color: #F8F8F8;
 }
 
@@ -115,10 +115,6 @@ td.warn {
 	background-color: #FF6700 !important;
 }
 
-td.unconfirmed {
-	background-color: #DDDDDD !important;
-}
-
 body > table#rfb > thead > tr > th, body > table > tbody > tr > td {
 	padding-top: 0.3em;
 	padding-bottom: 0.3em;
@@ -173,6 +169,17 @@ tr.invalid_blk, tr.invalid_blk > td {
         background-size: auto 100%;
 }
 
-td[title] > span {
+td[title] > span, td[title] > div > div > span {
 	border-bottom: 1px dotted black;
 }
+
+td.unconfirmed.conf9 { 	background-color: rgba(255, 128, 0, 1.0); }
+td.unconfirmed.conf8 { 	background-color: rgba(255, 128, 0, 0.9); }
+td.unconfirmed.conf7 { 	background-color: rgba(255, 128, 0, 0.8); }
+td.unconfirmed.conf6 { 	background-color: rgba(255, 128, 0, 0.7); }
+td.unconfirmed.conf5 { 	background-color: rgba(255, 128, 0, 0.6); }
+td.unconfirmed.conf4 { 	background-color: rgba(255, 128, 0, 0.5); }
+td.unconfirmed.conf3 { 	background-color: rgba(255, 128, 0, 0.4); }
+td.unconfirmed.conf2 { 	background-color: rgba(255, 128, 0, 0.3); }
+td.unconfirmed.conf1 { 	background-color: rgba(255, 128, 0, 0.2); }
+td.unconfirmed.conf0 { 	background-color: rgba(255, 128, 0, 0.1); }
