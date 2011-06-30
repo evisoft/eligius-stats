@@ -492,7 +492,7 @@ function updateBlocks($server, $apiRoot) {
 		$start = ($i < ($c - 1)) ? $foundAt[$i + 1] : 0;
 		$end = $foundAt[$i];
 
-		if(isset($sharesCache[$start][$end])) {
+		if(isset($sharesCache[$start][$end]) && $sharesCache[$start][$end][0] > 0) {
 			list($total, $shares) = $sharesCache[$start][$end];
 			$bData['shares_total'] = $total;
 			$bData['shares'] = $shares;

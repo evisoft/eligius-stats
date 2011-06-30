@@ -156,14 +156,16 @@ function showRecentBlocks() {
 	$instant = json_decode_safe(__DIR__.'/'.DATA_RELATIVE_ROOT.'/'.INSTANT_COUNT_FILE_NAME);
 	$toUpdate = array();
 	foreach($SERVERS as $name => $data) {
-		if(!isset($instant[$name])) {
+		if(!isset($instant[$name]) || $instant[$name]['lastID'] === null) {
 			continue;
 		}
 		$toUpdate[] = $name;
 	}
 
-	$toUpdate = "['".implode("', '", $toUpdate)."']";
-	echo '<script type="text/javascript">EligiusUtils.initShareCounter('.$toUpdate.')</script>'."\n";
+	if(count($toUpdate) > 0) {
+		$toUpdate = "['".implode("', '", $toUpdate)."']";
+		echo '<script type="text/javascript">EligiusUtils.initShareCounter('.$toUpdate.')</script>'."\n";
+	}
 
 	echo "<table id=\"rfb\">\n<thead>\n<tr><th>▼ When</th><th>Server</th><th colspan=\"3\">Round duration</th><th>Shares</th><th>Status</th><th>Block</th></tr>\n</thead>\n<tbody>\n";
 
@@ -174,15 +176,22 @@ function showRecentBlocks() {
 			continue;
 		}
 
+		if($instant[$name]['lastID'] === null) {
+			$cdf = $total = "<small>N/A</small>";
+		} else {
+			$cdf = round(getCDF($instant[$name]['totalShares'], $instant['difficulty']) * 100, 3);
+			$cdf = "<span title=\"Probability of finding a block given the number of submitted shares.\"><span id=\"instant_cdf_$name\">$cdf</span> % CDF</span>";
+			$total = prettyInt($instant[$name]['totalShares']);
+		}
+
 		$a = ($a + 1) % 2;
-		$cdf = round(getCDF($instant[$name]['totalShares'], $instant['difficulty']) * 100, 3);
 		$color = $colors[$name];
 		if(!isset($instant[$name]['roundStartTime'])) list($seconds, $minutes, $hours) = array('', '', '');
 		else list($seconds, $minutes, $hours) = extractTime(time() - $instant[$name]['roundStartTime']);
 
 		echo "<tr class=\"row$a\"><td>right now</td><td style=\"background-color: $color;\">$pName</td><td class=\"ralign\" id=\"instant_durationh_$name\">$hours</td><td class=\"ralign\" id=\"instant_durationm_$name\">$minutes</td><td class=\"ralign\" id=\"instant_durations_$name\">$seconds</td>";
-		echo "<td class=\"ralign\" id=\"instant_scount_$name\">".prettyInt($instant[$name]['totalShares'])."</td>";
-		echo "<td class=\"current_block\"><span title=\"Probability of finding a block given the number of submitted shares.\"><span id=\"instant_cdf_$name\">$cdf</span> % CDF</span></td><td>N/A</td></tr>\n";
+		echo "<td class=\"ralign\" id=\"instant_scount_$name\">".$total."</td>";
+		echo "<td class=\"current_block\">$cdf</td><td><small>N/A</small></td></tr>\n";
 	}
 
 	if(!$success) {
@@ -226,7 +235,7 @@ function showTopContributors() {
 	$success = null;
 	$top = cacheFetch('top_contributors', $success);
 	$i = 0;
-	if($success) {
+	if($success && count($top) > 0) {
 		foreach($top as $t) {
 			if($i >= NUMBER_OF_TOP_CONTRIBUTORS) break;
 			++$i;
@@ -241,7 +250,7 @@ function showTopContributors() {
 			echo "<tr class=\"rank$i\"><td>#$i</td><td>$pServer</td><td><a href=\"./$server/$address\">$address</a></td><td>$hashrate</td></tr>\n";
 		}
 		echo "<tr><td colspan=\"4\"><a href=\"./contrib\">Show all…</a></td></tr>\n";
-	} else echo "<tr><td colspan=\"4\"><small>N/A</small></td></tr>\n";
+	} else echo "<tr><td><small>N/A</small></td><td><small>N/A</small></td><td><small>N/A</small></td><td><small>N/A</small></td></tr>\n";
 
 	echo "</tbody>\n</table>\n";
 }
