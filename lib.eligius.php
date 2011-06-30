@@ -528,7 +528,7 @@ function updateBlocks($server, $apiRoot) {
 			$confirmations = $blockCount - $blockChain[$blk];
 			if($confirmations >= NUM_CONFIRMATIONS) {
 				$bData['valid'] = true;
-			} else $bData['valid'] = $confirmations;
+			} else $bData['valid'] = NUM_CONFIRMATIONS - $confirmations;
 		} else $bData['valid'] = NUM_CONFIRMATIONS;
 
 		$processedBlocks[] = $bData;

@@ -89,7 +89,7 @@ function showBlocks($address = null) {
 			echo "<tr class=\"row$a\"><td>$when</td>$server$duration";
 
 			if($address !== null) {
-				if($r['shares'] === null) {
+				if($r['shares'] === null && $shares > 0) {
 					$myShares = '<small>N/A</small>';
 					$percentage = '<small>N/A</small>';
 				} else {
@@ -99,7 +99,7 @@ function showBlocks($address = null) {
 				}
 				echo "<td class=\"ralign\">$myShares</td>";
 			}
-			$shares = ($shares !== null) ? prettyInt($shares) : '<small>N/A</small>';
+			$shares = ($shares > 0) ? prettyInt($shares) : '<small>N/A</small>';
 			echo "<td class=\"ralign\">$shares</td>";
 
 			if($address !== null) {

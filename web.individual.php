@@ -243,10 +243,14 @@ function showRecentPayouts($server, $address) {
 				$myShares = '<small>N/A</small>';
 				$percentage = '<small>N/A</small>';
 			} else {
-				$myShares = isset($r['shares'][$address]) ? $r['shares'][$address] : 0;
-				$percentage = number_format(100 * ($myShares / $shares), 4, '.', ',').' %';
-				$shares = prettyInt($shares);
-				$myShares = prettyInt($myShares);
+				if($shares == 0) {
+					$shares = $myShares = $percentage = '<small>N/A</small>';
+				} else {
+					$myShares = isset($r['shares'][$address]) ? $r['shares'][$address] : 0;
+					$percentage = number_format(100 * ($myShares / $shares), 4, '.', ',').' %';
+					$shares = prettyInt($shares);
+					$myShares = prettyInt($myShares);
+				}
 			}
 			$block = '<a href="http://blockexplorer.com/block/'.$r['hash'].'" title="'.$hash.'">…'.substr($hash, -25).'</a>';
 
