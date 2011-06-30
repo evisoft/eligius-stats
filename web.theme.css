@@ -184,3 +184,8 @@ td.unconfirmed.conf3 { 	background-color: rgba(255, 128, 0, 0.4); }
 td.unconfirmed.conf2 { 	background-color: rgba(255, 128, 0, 0.3); }
 td.unconfirmed.conf1 { 	background-color: rgba(255, 128, 0, 0.2); }
 td.unconfirmed.conf0 { 	background-color: rgba(255, 128, 0, 0.1); }
+
+ul.localsettings li {
+	margin-top: 1em;
+	margin-bottom: 1em;
+}

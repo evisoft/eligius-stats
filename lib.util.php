@@ -20,6 +20,16 @@ namespace Artefact2\EligiusStats;
 const FRESH_BLOCK_THRESHOLD = 600;
 const SHARE_DIFF = 0.999984741210937500000000000000000000000000000000000000000000000000037091495526931787187794383295520714646689355129378026328393541675746568232157348440782664046922186356528849561891415710665458082566072220046505;
 
+const COLOR_ALREADY_PAID = '00411C';
+const COLOR_UNPAID = '31926B';
+const COLOR_CURRENT_BLOCK = '3F8FD2';
+const COLOR_CREDIT = 'FF9999';
+const COLOR_THRESHOLD = 'FF0000';
+
+const COLOR_HASHRATE = 'F36D91';
+const COLOR_SHORTAVG = '00AC6B';
+const COLOR_LONGAVG = '007046';
+
 const DATA_RELATIVE_ROOT = 'json';
 const DATA_SUFFIX = '.json';
 
@@ -410,9 +420,10 @@ function extractTime($d) {
  * @param string $shownTitle the title written in <h1>
  * @param string $relativePathToRoot the path to get to the root from this page, WITHOUT any trailing /
  * @param bool $includeJquery if true, include the JQuery javascript files.
+ * @param bool $wColorPicker should we include the colorPicker deps too?
  * @return void
  */
-function printHeader($title, $shownTitle, $relativePathToRoot = '.', $includeJquery = true) {
+function printHeader($title, $shownTitle, $relativePathToRoot = '.', $includeJquery = true, $wColorPicker = false) {
 	$millis = 1000 * microtime(true) + 300; /* ~0.3s page load time */
 	$shareDiff = SHARE_DIFF;
 	echo <<<EOT
@@ -438,6 +449,11 @@ var __clockOffset = $millis - new Date().getTime();
 var __shareDiff = $shareDiff;
 </script>
 
+EOT;
+
+	if($wColorPicker) echo <<<EOT
+<link rel="stylesheet" media="screen" type="text/css" href="$relativePathToRoot/colorpicker/css/colorpicker.css" />
+<script type="text/javascript" src="$relativePathToRoot/colorpicker/js/colorpicker.js"></script>
 EOT;
 
 	echo <<<EOT

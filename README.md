@@ -18,9 +18,13 @@ Author : Artefact2 <artefact2@gmail.com>
 Depedencies
 ===========
 
-You must fetch the canvas-text library and place it in the canvas-text folder. One easy way to do that is to run :
+* You must fetch the canvas-text library and place it in the canvas-text folder. One easy way to do that is to run :
 
 svn checkout http://canvas-text.googlecode.com/svn/trunk/ canvas-text
+
+* You must fetch the colorpicker jQuery plugin and place it in the colorpicker folder. The library can be found at :
+
+http://www.eyecon.ro/colorpicker/
 
 Using the cli.update.php script
 ===============================

@@ -3,3 +3,4 @@ json/*.json
 inc.*.php
 
 canvas-text/
+colorpicker/

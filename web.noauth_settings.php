@@ -27,7 +27,14 @@ function toggleCookie($id, $cookieName, $labelOn, $labelOff) {
 	$__footerJS .= 'EligiusUtils.lcsUpdateContentRaw(\'#stc_'.$id.'\', \''.$cookieName.'\', \''.$labelOn.'\', \''.$labelOff.'\');';
 }
 
-printHeader('Change my local settings', 'Change my local settings', $relative = '.');
+function colorPicker($id, $storageName, $defaultColor) {
+	global $__footerJS;
+	echo '<div id="stl_'.$id.'" style="display: inline-block; vertical-align: middle;"></div> <a href="javascript:void(0);" onclick="$(\'#stl_'.$id.'\').ColorPickerSetColor(\'#'.$defaultColor.'\'); localStorage[\'a2_'.$storageName.'\'] = \''.$defaultColor.'\';">(Restore the default color)</a>';
+	$__footerJS .= 'EligiusUtils.stlBindColorPicker("stl_'.$id.'", "'.$storageName.'", "'.$defaultColor.'");';
+
+}
+
+printHeader('Change my local settings', 'Change my local settings', $relative = '.', true, true);
 
 echo "<p><strong>These settings will be stored in your browser's cache, so they will naturally go away when you
 clean your cache. Don't forget it !</strong><br >
@@ -35,7 +42,7 @@ If you have problems, make sure you enabled Javascript, cookies and make sure yo
 
 echo "<p>When you are done, you can <a href=\"./\">go back to the main page</a>.</p>\n<hr />\n";
 
-echo "<form method=\"GET\" action=\"./\"><ul>\n";
+echo "<form method=\"GET\" action=\"./\"><ul class=\"localsettings\">\n";
 
 echo "<li>";
 toggleCookie('tbc', 'tbc', 'Switch to BTC', 'Switch to TBC');
@@ -45,6 +52,41 @@ TBC are tonal Bitcoins, you can read more about them <a href=\"https://en.bitcoi
 echo "<li>";
 toggleCookie('noanim', 'noanim', 'Enable realtime share count updates', 'Disable realtime share count updates');
 echo " Use this if the instant share count updates are too frequent to your taste.</li>\n";
+
+$submit = '<span style="width: 22px; height: 22px; display: inline-block; overflow: hidden; background-image: url(\'./colorpicker/images/colorpicker_submit.png\'); vertical-align: middle;"></span>';
+echo "</ul>\n<hr />\n<p><strong>Note : to save your color changes, click the submit button ($submit) of the appropriate color pickers.</strong></p><ul class=\"localsettings\">\n";
+
+echo "<li>";
+colorPicker('alreadypaid', 'alreadypaid', COLOR_ALREADY_PAID);
+echo " Color of the <strong>Already paid</strong> area on the balance graph.</li>\n";
+
+echo "<li>";
+colorPicker('unpaid', 'unpaid', COLOR_UNPAID);
+echo " Color of the <strong>Unpaid reward</strong> area on the balance graph.</li>\n";
+
+echo "<li>";
+colorPicker('current', 'current', COLOR_CURRENT_BLOCK);
+echo " Color of the <strong>Current block estimate</strong> area on the balance graph.</li>\n";
+
+echo "<li>";
+colorPicker('threshold', 'threshold', COLOR_THRESHOLD);
+echo " Color of the <strong>Payout threshold</strong> line on the balance graph.</li>\n";
+
+echo "<li>";
+colorPicker('credit', 'credit', COLOR_CREDIT);
+echo " Color of the <strong>Maximum reward</strong> area on the balance graph.</li>\n";
+
+echo "<li>";
+colorPicker('hashrate', 'hashrate', COLOR_HASHRATE);
+echo " Color of the <strong>Hashrate</strong> area on the invidivual hashrate graph.</li>\n";
+
+echo "<li>";
+colorPicker('hashrate_short', 'hashrate_short', COLOR_SHORTAVG);
+echo " Color of the <strong>3 hour average</strong> line on the invidivual hashrate graph.</li>\n";
+
+echo "<li>";
+colorPicker('hashrate_long', 'hashrate_long', COLOR_LONGAVG);
+echo " Color of the <strong>12 hour average</strong> line on the invidivual hashrate graph.</li>\n";
 
 echo "</ul></form>\n";
 

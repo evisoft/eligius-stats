@@ -127,6 +127,12 @@ function showBalanceGraph($server, $address) {
 	$currentUri = '../'.DATA_RELATIVE_ROOT.'/'.T_BALANCE_CURRENT_BLOCK.'_'.$server.'_'.$address.DATA_SUFFIX;
 	$creditUri = '../'.DATA_RELATIVE_ROOT.'/'.T_BALANCE_CREDIT.'_'.$server.'_'.$address.DATA_SUFFIX;
 
+	$defPaid = COLOR_ALREADY_PAID;
+	$defUnpaid = COLOR_UNPAID;
+	$defCurrent = COLOR_CURRENT_BLOCK;
+	$defThresh = COLOR_THRESHOLD;
+	$defCredit = COLOR_CREDIT;
+
 	if(getPrefferedMonetaryUnit() == 'TBC') {
 		$font = ', font: { style: "normal", variant: "normal", weight: "normal", size: 10, family: "LuxiMonoTonal" } ';
 	} else $font = '';
@@ -144,15 +150,21 @@ var options = {
 	selection: { mode: "xy" }
 };
 
+var cPaid = '#' + (localStorage['a2_alreadypaid'] ? localStorage['a2_alreadypaid'] : '$defPaid');
+var cUnpaid = '#' + (localStorage['a2_unpaid'] ? localStorage['a2_unpaid'] : '$defUnpaid');
+var cCurrent = '#' + (localStorage['a2_current'] ? localStorage['a2_current'] : '$defCurrent');
+var cThresh = '#' + (localStorage['a2_threshold'] ? localStorage['a2_threshold'] : '$defThresh');
+var cCredit = '#' + (localStorage['a2_credit'] ? localStorage['a2_credit'] : '$defCredit');
+
 $.get("$paidUri", "", function(data, textStatus, xhr) {
 	var alreadyPaid = data;
 	options.yaxis.min = data[EligiusUtils.findDataMin(data)][1];
-	series.push({ data: data, label: "Already paid", color: "#00411C", lines: { lineWidth: 0.5 } });
+	series.push({ data: data, label: "Already paid", color: cPaid, lines: { lineWidth: 0.5 } });
 	$.plot($('#eligius_balance'), series, options);
 
 	$.get("$unpaidUri", "", function(data, textStatus, xhr) {
 		var unpaid = data;
-		series.push({ data: data, label: "Unpaid reward", color: "#31926B", lines: { lineWidth: 0.5 } });
+		series.push({ data: data, label: "Unpaid reward", color: cUnpaid, lines: { lineWidth: 0.5 } });
 		$.plot($('#eligius_balance'), series, options);
 
 		$.get("$currentUri", "", function(data, textStatus, xhr) {
@@ -160,10 +172,10 @@ $.get("$paidUri", "", function(data, textStatus, xhr) {
 			options.yaxis.max = data[EligiusUtils.findDataMax(data)][1] + alreadyPaid[alreadyPaid.length - 1][1] + unpaid[unpaid.length - 1][1];
 			options.yaxis.min = Math.max(0, options.yaxis.min - (options.yaxis.max - options.yaxis.min) * 0.05);
 			options.yaxis.max = options.yaxis.max + (options.yaxis.max - options.yaxis.min) * 0.10;
-			series.push({ data: data, label: "Current block estimate", color: "#3F8FD2"  });
+			series.push({ data: data, label: "Current block estimate", color: cCurrent  });
 			$.plot($('#eligius_balance'), series, options);
 
-			series.push({ data: EligiusUtils.splitHorizontalLine(EligiusUtils.shiftData(alreadyPaid, 0.33554432)), label: "Payout threshold", color: "#FF0000", lines: { fill: false }, stack: false });
+			series.push({ data: EligiusUtils.splitHorizontalLine(EligiusUtils.shiftData(alreadyPaid, 0.33554432)), label: "Payout threshold", color: cThresh, lines: { fill: false }, stack: false });
 
 			var maxZoomT = 600000;
 			var maxZoomY = 0.005;
@@ -185,7 +197,7 @@ $.get("$paidUri", "", function(data, textStatus, xhr) {
 			});
 
 			$.get("$creditUri", "", function(data, textStatus, xhr) {
-				series.push({ data: data, label: "Maximum reward", color: "#FF9999", lines: { lineWidth: 0 }  });
+				series.push({ data: data, label: "Maximum reward", color: cCredit, lines: { lineWidth: 0 }  });
 				$.plot($('#eligius_balance'), series, options);
 			}).error(function() {
 				$('#eligius_balance_errors').append('<p>An error happened while loading the "credit" data.<br />Try reloading the page.</p>');
@@ -273,6 +285,10 @@ function showHashRateGraph($server, $address) {
 	//$ticks = makeTicks();
 	$interval = HASHRATE_PERIOD * 1000;
 
+	$cHashrate = COLOR_HASHRATE;
+	$cShort = COLOR_SHORTAVG;
+	$cLong = COLOR_LONGAVG;
+
 	echo "<div class=\"graph\">\n<div id=\"eligius_indiv_hashrate_errors\" class=\"errors\"></div>\n";
 	echo "<div id=\"eligius_indiv_hashrate\" style=\"width:750px;height:350px;\">You must enable Javascript to see the graph.</div>\n</div>\n";
 	echo "<script type=\"text/javascript\">\n$(function () {\n";
@@ -286,10 +302,14 @@ var options = {
 	selection: { mode: "xy" }
 };
 
+var cHashrate = '#' + (localStorage['a2_hashrate'] ? localStorage['a2_hashrate'] : '$cHashrate');
+var cShort = '#' + (localStorage['a2_hashrate_short'] ? localStorage['a2_hashrate_short'] : '$cShort');
+var cLong = '#' + (localStorage['a2_hashrate_long'] ? localStorage['a2_hashrate_long'] : '$cLong');
+
 $.get("$uri", "", function(data, textStatus, xhr) {
-	series.push({ data: data, label: "Hashrate", color: "#F36D91", lines: { lineWidth: 1 } });
-	series.push({ data: EligiusUtils.movingAverage(data, 10800000, $interval), label: "3-hour average", color: "#00AC6B", lines: { fill: false } });
-	series.push({ data: EligiusUtils.movingAverage(data, 43200000, $interval), label: "12-hour average", color: "#007046", lines: { fill: false } });
+	series.push({ data: data, label: "Hashrate", color: cHashrate, lines: { lineWidth: 1 } });
+	series.push({ data: EligiusUtils.movingAverage(data, 10800000, $interval), label: "3-hour average", color: cShort, lines: { fill: false } });
+	series.push({ data: EligiusUtils.movingAverage(data, 43200000, $interval), label: "12-hour average", color: cLong, lines: { fill: false } });
 	$.plot($('#eligius_indiv_hashrate'), series, options);
 
 	var maxZoomT = 600000;

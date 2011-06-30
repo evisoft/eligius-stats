@@ -24,11 +24,11 @@ EligiusUtils.formatHashrate = function(rate, axis) {
 	} else if(rate < 10 * 1000000000) {
 		return (rate / 1000000).toFixed(2) + " MH/s";
 	} else return (rate / 1000000000).toFixed(2) + " GH/s";
-}
+};
 
 EligiusUtils.formatBTC = function(money, axis) {
 	return money.toFixed(3) + " BTC";
-}
+};
 
 EligiusUtils.formatTBC = function(money, axis) {
 	money /= 0.00000001;
@@ -64,7 +64,7 @@ EligiusUtils.formatTBC = function(money, axis) {
 	if(s == "") s = '0.00';
 
 	return s + " TBC";
-}
+};
 
 EligiusUtils.toggleAutorefresh = function() {
 	if(EligiusUtils.autorefresh) {
@@ -78,7 +78,7 @@ EligiusUtils.toggleAutorefresh = function() {
 		}, 300000);
 		$("#autorefresh_message").html(' &mdash; The page will refresh automatically every 5 minutes.');
 	}
-}
+};
 
 EligiusUtils.lcsToggleCookie = function(selector, cookieName, labelOn, labelOff) {
 	var newValue;
@@ -88,7 +88,7 @@ EligiusUtils.lcsToggleCookie = function(selector, cookieName, labelOn, labelOff)
 
 	$.cookie("a2_" + cookieName, newValue, { expires: 30, path: '/' });
 	EligiusUtils.lcsUpdateContent(selector, cookieName, labelOn, labelOff);
-}
+};
 
 EligiusUtils.lcsUpdateContent = function(selector, cookieName, labelOn, labelOff) {
 	$(selector).attr('disabled', 'disabled');
@@ -101,7 +101,7 @@ EligiusUtils.lcsUpdateContent = function(selector, cookieName, labelOn, labelOff
 		});
 
 	});
-}
+};
 
 EligiusUtils.lcsUpdateContentRaw = function(selector, cookieName, labelOn, labelOff) {
 	if($.cookie("a2_" + cookieName) == "1") {
@@ -109,7 +109,7 @@ EligiusUtils.lcsUpdateContentRaw = function(selector, cookieName, labelOn, label
 	} else {
 		$(selector).val(labelOff);
 	}
-}
+};
 
 EligiusUtils.movingAverage = function(data, window, interval) {
 	var points = [];
@@ -149,7 +149,7 @@ EligiusUtils.movingAverage = function(data, window, interval) {
 	}
 
 	return points;
-}
+};
 
 EligiusUtils.shiftData = function(data, shiftAmount) {
 	var points = [];
@@ -160,7 +160,7 @@ EligiusUtils.shiftData = function(data, shiftAmount) {
 	}
 
 	return points;
-}
+};
 
 EligiusUtils.findDataMin = function(data) {
 	var c = data.length;
@@ -172,7 +172,7 @@ EligiusUtils.findDataMin = function(data) {
 	}
 
 	return min;
-}
+};
 
 EligiusUtils.findDataMax = function(data) {
 	var c = data.length;
@@ -184,7 +184,7 @@ EligiusUtils.findDataMax = function(data) {
 	}
 
 	return max;
-}
+};
 
 EligiusUtils.splitHorizontalLine = function(data) {
 	var c = data.length;
@@ -201,7 +201,7 @@ EligiusUtils.splitHorizontalLine = function(data) {
 	}
 
 	return points;
-}
+};
 
 EligiusUtils.toggleAnnouncementVisibility = function() {
 	var announcementClass = $('div#announcements_id').html();
@@ -215,7 +215,7 @@ EligiusUtils.toggleAnnouncementVisibility = function() {
 	}
 
 	EligiusUtils.updateToggleLink();
-}
+};
 
 EligiusUtils.maybeHideAnnouncements = function() {
 	var announcementClass = $('div#announcements_id').html();
@@ -225,7 +225,7 @@ EligiusUtils.maybeHideAnnouncements = function() {
 	}
 
 	EligiusUtils.updateToggleLink();
-}
+};
 
 EligiusUtils.updateToggleLink = function() {
 	var announcementClass = $('div#announcements_id').html();
@@ -235,7 +235,7 @@ EligiusUtils.updateToggleLink = function() {
 	} else {
 		$('a#announcement_toggle').html('Hide announcements [X]');
 	}
-}
+};
 
 EligiusUtils.formatNumber = function(num) {
 	var str = num + '';
@@ -247,11 +247,11 @@ EligiusUtils.formatNumber = function(num) {
 	if(ret.substr(0, 1) == ',') ret = ret.substr(1);
 
 	return ret;
-}
+};
 
 EligiusUtils.getCDF = function(shares, difficulty) {
 	return 1.0 - Math.exp(-__shareDiff * shares / difficulty);
-}
+};
 
 EligiusUtils.initShareCounter = function(servers) {
 	var firstPass = true;
@@ -343,7 +343,18 @@ EligiusUtils.initShareCounter = function(servers) {
 			requestAnimFrame(magic);
 		}
 	}, "json");
-}
+};
+
+EligiusUtils.stlBindColorPicker = function(id, name, defaultColor) {
+	var dColor = defaultColor;
+	if(localStorage['a2_' + name]) {
+		dColor = localStorage['a2_' + name];
+	}
+
+	$('#' + id).ColorPicker({flat: true, color: dColor, onSubmit: function(hsb, hex, rgb, el) {
+		localStorage['a2_' + name] = hex;
+	}});
+};
 
 /* -------------------------------------------------------------------------------------------------------------------*/
 /*
