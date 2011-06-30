@@ -134,23 +134,55 @@ function showPoolStatuses() {
 function showRecentBlocks() {
 	global $SERVERS;
 
-	echo "<h2>Recently found blocks</h2>\n";
 	$now = time();
 
-	echo "<table id=\"rfb\">\n<thead>\n<tr><th>▼ When</th><th>Server</th><th colspan=\"3\">Round duration</th><th>Shares</th><th>Status</th><th>Block</th></tr>\n</thead>\n<tbody>\n";
+	echo "<h2>Recent rounds</h2>";
+
 
 	$recent = array();
 	$colors = array();
 	$success = true;
 	foreach($SERVERS as $name => $data) {
 		$k = cacheFetch('blocks_recent_'.$name, $s);
-		foreach($k as $a) {
-			$a['server'] = $name;
-			$recent[] = $a;
+		foreach($k as $kzk) {
+			$kzk['server'] = $name;
+			$recent[] = $kzk;
 		}
 		$success = $success && $s;
 
 		$colors[$name] = extractColor($data[0]);
+	}
+
+	$instant = json_decode_safe(__DIR__.'/'.DATA_RELATIVE_ROOT.'/'.INSTANT_COUNT_FILE_NAME);
+	$toUpdate = array();
+	foreach($SERVERS as $name => $data) {
+		if(!isset($instant[$name])) {
+			continue;
+		}
+		$toUpdate[] = $name;
+	}
+
+	$toUpdate = "['".implode("', '", $toUpdate)."']";
+	echo '<script type="text/javascript">EligiusUtils.initShareCounter('.$toUpdate.')</script>'."\n";
+
+	echo "<table id=\"rfb\">\n<thead>\n<tr><th>▼ When</th><th>Server</th><th colspan=\"3\">Round duration</th><th>Shares</th><th>Status</th><th>Block</th></tr>\n</thead>\n<tbody>\n";
+
+	$a = 0;
+	foreach($SERVERS as $name => $data) {
+		list($pName,) = $data;
+		if(!isset($instant[$name])) {
+			continue;
+		}
+
+		$a = ($a + 1) % 2;
+		$cdf = round(getCDF($instant[$name]['totalShares'], $instant['difficulty']) * 100, 3);
+		$color = $colors[$name];
+		if(!isset($instant[$name]['roundStartTime'])) list($seconds, $minutes, $hours) = array('', '', '');
+		else list($seconds, $minutes, $hours) = extractTime(time() - $instant[$name]['roundStartTime']);
+
+		echo "<tr class=\"row$a\"><td>right now</td><td style=\"background-color: $color;\">$pName</td><td class=\"ralign\" id=\"instant_durationh_$name\">$hours</td><td class=\"ralign\" id=\"instant_durationm_$name\">$minutes</td><td class=\"ralign\" id=\"instant_durations_$name\">$seconds</td>";
+		echo "<td class=\"ralign\" id=\"instant_scount_$name\">".prettyInt($instant[$name]['totalShares'])."</td>";
+		echo "<td class=\"current_block\"><span title=\"Probability of finding a block given the number of submitted shares.\"><span id=\"instant_cdf_$name\">$cdf</span> % CDF</span></td><td>N/A</td></tr>\n";
 	}
 
 	if(!$success) {
@@ -159,7 +191,6 @@ function showRecentBlocks() {
 		$cb = function($a, $b) { return $b['when'] - $a['when']; }; /* Sort in reverse order */
 		usort($recent, $cb);
 
-		$a = 0;
 		foreach($recent as $r) {
 			$a = ($a + 1) % 2;
 
@@ -326,47 +357,6 @@ EOT;
 	echo "});\n</script>\n";
 }
 
-function showInstantShareCounts() {
-	global $SERVERS;
-
-	echo "<h2>Current round statistics</h2>\n<table id=\"instant_stats\">\n<thead>\n";
-
-	$instant = json_decode_safe(__DIR__.'/'.DATA_RELATIVE_ROOT.'/'.INSTANT_COUNT_FILE_NAME);
-	$fInstant = array();
-	$toUpdate = array();
-	foreach($SERVERS as $name => $data) {
-		list($pName,) = $data;
-		if(!isset($instant[$name])) {
-			$fInstant[$pName] = null;
-			$fTotals[$name] = null;
-		}
-		else {
-			$fInstant[$pName] = '<strong class="moremore" id="instant_scount_'.$name.'">'.prettyInt($instant[$name]['totalShares']).'</strong>';
-			$toUpdate[] = $name;
-			$fTotals[$name] = $instant[$name]['totalShares'];
-		}
-	}
-
-	echo "<tr><th></th>\n";
-	foreach(array_keys($fInstant) as $s) {
-		echo "<th>$s</th>";
-	}
-	echo "\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>Shares in the current round</td>";
-	foreach(array_values($fInstant) as $h) {
-		if($h === null) $h = '<small>N/A</small>';
-		echo "<td>$h</td>";
-	}
-	echo "\n</tr>\n<tr>\n<td title=\"Probability of finding a block given the number of submitted shares.\"><span>Current round's CDF</span></td>";
-	foreach($fTotals as $name => $h) {
-		if($h === null) $h = '<small>N/A</small>';
-		echo "<td><span id=\"instant_cdf_$name\">".round(getCDF($h, $instant['difficulty']) * 100, 3)."</span> %</td>";
-	}
-	echo "\n</tr>\n</tbody>\n</table>\n";
-
-	$toUpdate = "['".implode("', '", $toUpdate)."']";
-	echo '<script type="text/javascript">EligiusUtils.initShareCounter('.$toUpdate.')</script>'."\n";
-}
-
 if($_SERVER['QUERY_STRING'] !== "dispatch_request") {
 	header('HTTP/1.1 404 Not Found', true, 404);
 	die;
@@ -376,10 +366,9 @@ printHeader('Eligius pool statistics', 'Eligius pool statistics <small>(version 
 
 showIndividualInstructions();
 showPoolStatuses();
-showInstantShareCounts();
+showRecentBlocks();
 showPoolHashRate();
 showHashRateGraph();
-showRecentBlocks();
 showTopContributors();
 showContributingInstructions();
 

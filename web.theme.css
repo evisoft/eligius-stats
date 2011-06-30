@@ -169,10 +169,11 @@ tr.invalid_blk, tr.invalid_blk > td {
         background-size: auto 100%;
 }
 
-td[title] > span, td[title] > div > div > span {
+td[title] > span, span[title] {
 	border-bottom: 1px dotted black;
 }
 
+td.current_block { background-color: rgba(255, 128, 0, 1.0) !important; }
 td.unconfirmed.conf9 { 	background-color: rgba(255, 128, 0, 1.0); }
 td.unconfirmed.conf8 { 	background-color: rgba(255, 128, 0, 0.9); }
 td.unconfirmed.conf7 { 	background-color: rgba(255, 128, 0, 0.8); }

@@ -254,21 +254,32 @@ EligiusUtils.getCDF = function(shares, difficulty) {
 }
 
 EligiusUtils.initShareCounter = function(servers) {
-	var instantData;
+	var firstPass = true;
 	var rates = {};
 	var totals = {};
 	var lastUpdated = {};
+	var roundStartTime = {};
 	var c = servers.length;
 	var i;
 	var t;
 	var name;
 	var difficulty;
+	var duration;
+	var delay;
 
 	$.get("./json/instant_share_count.json", "", function(data, textStatus, xhr) {
 		for(i = 0; i < c; ++i) {
 			rates[servers[i]] = +data[servers[i]].instantRate;
 			totals[servers[i]] = +data[servers[i]].totalShares;
 			lastUpdated[servers[i]] = +data[servers[i]].lastUpdated;
+
+			if(!firstPass) {
+				if(roundStartTime[servers[i]] !== +data[servers[i]].roundStartTime) {
+					location.reload(true);
+				}
+			}
+			roundStartTime[servers[i]] = +data[servers[i]].roundStartTime;
+			firstPass = false;
 		}
 		difficulty = data.difficulty;
 
@@ -291,12 +302,39 @@ EligiusUtils.initShareCounter = function(servers) {
 				$("#instant_cdf_" + name).html((EligiusUtils.getCDF(totals[name], difficulty) * 100).toFixed(3));
 			}
 		};
+		var updateDuration = function() {
+			t = 0.001 * (new Date().getTime() + __clockOffset);
+			for(i = 0; i < c; ++i) {
+				name = servers[i];
+				delay = t - roundStartTime[name];
+				duration = [];
+				duration.push(Math.floor(delay / 3600), Math.floor((delay / 60) % 60), Math.floor(delay % 60));
+				if(duration[0] == 0) {
+					duration[0] = "";
+					if(duration[1] == 0) {
+						duration[1] = "";
+					} else {
+						duration[1] = duration[1] + "m";
+					}
+				} else {
+					duration[0] = duration[0] + "h";
+					duration[1] = duration[1] + "m";
+				}
+				duration[2] = duration[2] + "s";
+
+				$("#instant_durationh_" + name).html(duration[0]);
+				$("#instant_durationm_" + name).html(duration[1]);
+				$("#instant_durations_" + name).html(duration[2]);
+			}
+		}
+
 		var magic = function() {
 			updateCounts();
 			requestAnimFrame(magic);
 		}
 
 		setInterval(periodicRefresh, 60000);
+		setInterval(updateDuration, 1000);
 
 		if($.cookie("a2_noanim") == "1") {
 			setInterval(updateCounts, 250);
