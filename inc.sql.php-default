@@ -4,5 +4,7 @@
  * Copy this file to inc.sql.php, and put your SQL credentials below.
  */
 
-mysql_connect('127.0.0.1', '__USER__', '__PASSWORD__');
-mysql_select_db('eligius');
+const SQL_HOST = '127.0.0.1';
+const SQL_USER = '__USER__';
+const SQL_PASSWORD = '__PASSWORD__';
+const SQL_DB = 'eligius';

@@ -582,11 +582,25 @@ function getCDF($shares, $difficulty) {
 }
 
 /**
+ * Establish a connection to the SQL server.
+ * @note this is called automatically, don't use it !
+ */
+function sqlConnect() {
+	static $link = null;
+	if($link !== null) return;
+
+	$link = mysql_connect(SQL_HOST, SQL_USER, SQL_PASSWORD);
+	mysql_select_db(SQL_DB);
+}
+
+/**
  * Execute a SQL query.
  * @param string $q the query to execute
  * @return \resource
  */
 function sqlQuery($q) {
+	sqlConnect();
+
 	$r = mysql_query($q);
 	if($r === false) {
 		trigger_error("The following query failed : \n$q\n".mysql_error()."\n", E_USER_WARNING);
