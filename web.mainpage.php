@@ -188,9 +188,6 @@ function showRecentBlocks() {
 	if(!$success) {
 		echo "<tr><td><small>N/A</small></td><td><small>N/A</small></td><td colspan=\"3\"><small>N/A</small></td><td><small>N/A</small></td><td><small>N/A</small></td><td><small>N/A</small></td></tr>\n";
 	} else {
-		$cb = function($a, $b) { return $b['when'] - $a['when']; }; /* Sort in reverse order */
-		usort($recent, $cb);
-
 		foreach($recent as $r) {
 			$a = ($a + 1) % 2;
 
@@ -201,7 +198,6 @@ function showRecentBlocks() {
 			$server = $SERVERS[$r['server']][0];
 			$block = '<a href="http://blockexplorer.com/block/'.$r['hash'].'" title="'.$hash.'">…'.substr($hash, -25).'</a>';
 			$status = prettyBlockStatus($r['valid'], $r['when']);
-			$statusClass = getRowClassForBlock($r['valid']);
 
 			if(isset($r['duration'])) {
 				list($seconds, $minutes, $hours) = extractTime($r['duration']);
@@ -212,7 +208,7 @@ function showRecentBlocks() {
 
 			$c = $colors[$r['server']];
 
-			echo "<tr class=\"row$a$statusClass\"><td>$when</td><td style=\"background-color: $c;\">$server</td>$duration<td class=\"ralign\">$shares</td>$status<td class=\"ralign\">$block</td></tr>\n";
+			echo "<tr class=\"row$a\"><td>$when</td><td style=\"background-color: $c;\">$server</td>$duration<td class=\"ralign\">$shares</td>$status<td class=\"ralign\">$block</td></tr>\n";
 		}
 
 		$a = ($a + 1) % 2;

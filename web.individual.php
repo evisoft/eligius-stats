@@ -230,9 +230,6 @@ function showRecentPayouts($server, $address) {
 	if(!$success) {
 		echo "<tr><td><small>N/A</small></td><td colspan=\"3\"><small>N/A</small></td><td><small>N/A</small></td><td><small>N/A</small></td><td><small>N/A</small></td><td><small>N/A</small></td><td><small>N/A</small></td></tr>\n";
 	} else {
-		$cb = function($a, $b) { return $b['when'] - $a['when']; }; /* Sort in reverse order */
-		usort($recent, $cb);
-
 		$a = 0;
 		foreach($recent as $r) {
 			$a = ($a + 1) % 2;
@@ -269,8 +266,7 @@ function showRecentPayouts($server, $address) {
 			}
 
 			$status = prettyBlockStatus($r['valid'], $r['when']);
-			$statusClass = getRowClassForBlock($r['valid']);
-			echo "<tr class=\"row$a$statusClass\"><td>$when</td>$duration<td class=\"ralign\">$myShares</td><td class=\"ralign\">$shares</td><td class=\"ralign\">$percentage</td>$reward$status<td class=\"ralign\">$block</td></tr>\n";
+			echo "<tr class=\"row$a\"><td>$when</td>$duration<td class=\"ralign\">$myShares</td><td class=\"ralign\">$shares</td><td class=\"ralign\">$percentage</td>$reward$status<td class=\"ralign\">$block</td></tr>\n";
 		}
 
 		$a = ($a + 1) % 2;

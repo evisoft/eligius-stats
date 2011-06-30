@@ -57,6 +57,7 @@ const NUM_CONFIRMATIONS = 120; /* Number of confirmations before a block is cons
 
 const RECENT_BLOCKS = 10;
 const OLD_BLOCKS = 250;
+const GENESIS_BLOCK = '000000000000066cf09f972e4e258916f1f3003a37d208555d3b527542d7695f'; /* The first valid block found by the pool. */
 
 require __DIR__.'/lib.util.php';
 require __DIR__.'/lib.cache.php';
@@ -215,7 +216,7 @@ function updateServerStatus($serverName, $address, $port) {
 
 /**
  * Update the instant share rate and instant share count for the current round.
- * @param $server the server name
+ * @param string $server the server name
  * @return bool true if the operation succeeded.
  */
 function updateInstantShareCount($server) {
@@ -228,14 +229,7 @@ function updateInstantShareCount($server) {
 
 	$recent = cacheFetch('blocks_recent_'.$server, $success);
 	if($success) {
-		$lastBlockTimestamp = null;
-		usort($recent, function($a, $b) { return $b['when'] - $a['when']; });
-		foreach($recent as $blk) {
-			if($blk['valid'] === true || is_int($blk['valid'])) {
-				$lastBlockTimestamp = $blk['when'];
-				break;
-			}
-		}
+		$lastBlockTimestamp = count($recent) > 0 ? $recent[0]['when'] : null;
 
 		if(!isset($instant[$server]['roundStartTime']) || $instant[$server]['roundStartTime'] != $lastBlockTimestamp || !$instant[$server]['lastID']) {
 			$instant[$server]['roundStartTime'] = $lastBlockTimestamp;
@@ -442,14 +436,15 @@ function updateAverageHashrates() {
  * @return bool true if the operation succeeded.
  */
 function updateBlocks($server, $apiRoot) {
-	$recent = cacheFetch('blocks_recent_'.$server, $success0);
-	$old = cacheFetch('blocks_old_'.$server, $success1);
-	if(!$success0) {
-		$recent = array();
+	static $blockChain = null;
+	if($blockChain === null) {
+		if(($blockCount = updateBlockChain()) === false) return false;
+		$blockChain = cacheFetch('block_chain', &$success);
+		if(!$success) return false;
 	}
-	if(!$success1) {
-		$old = array();
-	}
+
+	$sharesCache = cacheFetch('shares', $success);
+	if(!$success) $sharesCache = array();
 
 	$gBlocks = glob($apiRoot.'/blocks/0000*.json');
 	$blocks = array();
@@ -460,65 +455,89 @@ function updateBlocks($server, $apiRoot) {
 
 	$foundAt = array_values($blocks);
 	$blocks = array_keys($blocks);
+	$processedBlocks = array();
 
+	foreach($blocks as &$blk) {
+		$blk = pathinfo($blk, PATHINFO_FILENAME);
+	}
+
+	/* Prune invalid blocks */
 	$c = count($blocks);
-	$newBlocks = array();
-
+	$now = time();
 	for($i = 0; $i < $c; ++$i) {
-		$blk = pathinfo($blocks[$i], PATHINFO_FILENAME);
-		if(count($recent) > 0 && $recent[0]['when'] >= $foundAt[$i]) break;
+		if(!preg_match('%^[0-9a-fA-F]{64}$%D', $blocks[$i])) {
+			/* Malformed hash, probably not a block */
+			unset($foundAt[$i]);
+			unset($blocks[$i]);
+		} else if((($now - $foundAt[$i]) > FRESH_BLOCK_THRESHOLD) && !isset($blockChain[$blocks[$i]])) {
+			/* Invalid block */
+			unset($foundAt[$i]);
+			unset($blocks[$i]);
+		}
+	}
+
+	/* Reorganize array keys */
+	$foundAt = array_values($foundAt);
+	$blocks = array_values($blocks);
+
+	$c = min(count($blocks), RECENT_BLOCKS + OLD_BLOCKS); /* Don't process more blocks than necessary */
+	for($i = 0; $i < $c; ++$i) {
+		$blk = $blocks[$i];
 
 		$bData = array();
-
 		$bData['hash'] = $blk;
 		$bData['when'] = $foundAt[$i];
 		$bData['duration'] = ($i < ($c - 1)) ? ($foundAt[$i] - $foundAt[$i + 1]) : null;
 
-		$start = ($i < ($c - 1)) ? ($foundAt[$i + 1]) : 0;
+		$start = ($i < ($c - 1)) ? $foundAt[$i + 1] : 0;
 		$end = $foundAt[$i];
-		$q = sqlQuery("
-			SELECT username, COUNT(*) AS fshares
-			FROM shares
-			WHERE our_result <> 'N'
-				AND server = $server
-				AND time BETWEEN $start AND $end
-			GROUP BY username
-		");
 
-		$bData['shares_total'] = 0;
-		while($r = fetchAssoc($q)) {
-			$bData['shares_total'] += $r['fshares'];
-			$bData['shares'][$r['username']] = $r['fshares'];
+		if(isset($sharesCache[$start][$end])) {
+			list($total, $shares) = $sharesCache[$start][$end];
+			$bData['shares_total'] = $total;
+			$bData['shares'] = $shares;
+		} else {
+			$sharesCache[$start] = array();
+
+			$q = sqlQuery("
+				SELECT username, COUNT(*) AS fshares
+				FROM shares
+				WHERE our_result <> 'N'
+					AND server = $server
+					AND time BETWEEN $start AND $end
+				GROUP BY username
+			");
+
+			$bData['shares_total'] = 0;
+			while($r = fetchAssoc($q)) {
+				$bData['shares_total'] += $r['fshares'];
+				$bData['shares'][$r['username']] = $r['fshares'];
+			}
+
+			$sharesCache[$start][$end] = array($bData['shares_total'], $bData['shares']);
 		}
 
-		$json = json_decode_safe($blocks[$i]);
+		$json = json_decode_safe($apiRoot.'/blocks/'.$blk.'.json');
 		foreach($json as $address => $row) {
 			if(isset($row['earned'])) {
 				$bData['rewards'][$address] = rawSatoshiToBTC($row['earned']);
 			}
 		}
 
-		$newBlocks[] = $bData;
+		if((time() - $bData['when']) > FRESH_BLOCK_THRESHOLD) {
+			$confirmations = $blockCount - $blockChain[$blk];
+			if($confirmations >= NUM_CONFIRMATIONS) {
+				$bData['valid'] = true;
+			} else $bData['valid'] = $confirmations;
+		} else $bData['valid'] = NUM_CONFIRMATIONS;
+
+		$processedBlocks[] = $bData;
 	}
 
-	$recent = array_merge($newBlocks, $recent);
+	$recent = array_slice($processedBlocks, 0, RECENT_BLOCKS);
+	$old = array_slice($processedBlocks, RECENT_BLOCKS);
 
-	// Transfer overflowing blocks from $recent to $old
-	$c = count($recent);
-	for($i = RECENT_BLOCKS; $i < $c; ++$i) {
-		array_unshift($old, array_pop($recent));
-	}
-
-	// Throw away very old blocks
-	$c = count($old);
-	for($i = OLD_BLOCKS; $i < $c; ++$i) {
-		array_pop($old);
-	}
-
-	$r = cacheStore('blocks_recent_'.$server, $recent) && cacheStore('blocks_old_'.$server, $old);
-	if($r && count($newBlocks) > 0) {
-		return updateAllBlockMetadata($server);
-	} else return $r;
+	return cacheStore('shares', $sharesCache) && cacheStore('blocks_recent_'.$server, $recent) && cacheStore('blocks_old_'.$server, $old);
 }
 
 /**
@@ -659,148 +678,26 @@ function getBalance($apiRoot, $address) {
 }
 
 /**
- * Update the shares of invalid blocks.
- * @param array $block a potentially invalid block
- * @param array $nextBlock the block found by the pool right after $block
- * @return null nothing
- */
-function maybeProcessInvalidBlock(&$block, &$nextBlock) {
-	if($block['valid'] !== false) return;
-	if($block['shares_total'] === null && $block['shares'] === null && $block['rewards'] === null) return;
-
-	$nextBlock['shares_total'] += $block['shares_total'];
-
-	foreach($block['shares'] as $address => $s) {
-		if(!isset($nextBlock['shares'][$address])) $nextBlock['shares'][$address] = 0;
-		$nextBlock['shares'][$address] += $s;
-	}
-
-	// Don't add the rewards, because the invalid block generated zero BTC !
-
-	$block['shares'] = null;
-	$block['shares_total'] = null;
-	$block['rewards'] = null;
-}
-
-/**
- * Update the metadata of a block.
- * @param array $block block to update
- * @param null|array $previousBlock previous block found by the pool (can be null)
- * @return null nothing
- */
-function updateBlock(&$block, $previousBlock = null) {
-	static $lackOfConfirmations = null;
-	static $lastUnconfirmedBlockDate;
-	if($lackOfConfirmations === null) $lastUnconfirmedBlockDate = getUnconfirmedBlocks($lackOfConfirmations);
-
-	$json = bitcoind('getblockbyhash '.$block['hash'], true);
-	if(strpos($json, 'error:') === 0) {
-		$block['valid'] = false;
-		return;
-	} else if(isset($lackOfConfirmations[$block['hash']])) {
-		$block['valid'] = $lackOfConfirmations[$block['hash']];
-	}
-
-	$bData = json_decode_safe($json, false);
-	$block['when'] = $bData['time'];
-
-	if($bData['time'] < $lastUnconfirmedBlockDate) {
-		if(!isset($block['valid']) || $block['valid'] !== false) {
-			$block['valid'] = true;
-		}
-	}
-
-	if(!isset($block['valid'])) $block['valid'] = false;
-
-	if($previousBlock == null) {
-		unset($block['duration']);
-	} else {
-		$block['duration'] = $block['when'] - $previousBlock['when'];
-	}
-}
-
-/**
- * Get all the currently unconfirmed blocks.
- * @param array $lackOfConfirmations list of currently unconfirmed block
- * @return integer timestamp of oldest unconfirmed block
- */
-function getUnconfirmedBlocks(&$lackOfConfirmations) {
-	$lackOfConfirmations = array();
-	$firstDate = null;
-	$blockCount = bitcoind('getblockcount');
-	for($i = (NUM_CONFIRMATIONS - 1); $i >= 0; --$i) {
-		$n = $blockCount - $i;
-		$bData = json_decode_safe(bitcoind('getblockbycount '.$n), false);
-		$lackOfConfirmations[$bData['hash']] = NUM_CONFIRMATIONS - $i;
-		if($firstDate === null) {
-			$firstDate = $bData['time'];
-		}
-	}
-	return $firstDate;
-}
-
-/**
- * Update the metadata of all the blocks found by a pool.
- * @param string $server short server name
+ * Update the cached block chain of valid recent blocks.
  * @return bool true if the operation succeeded.
  */
-function updateAllBlockMetadata($server) {
-	$old = cacheFetch('blocks_old_'.$server, $s0);
-	$recent = cacheFetch('blocks_recent_'.$server, $s1);
+function updateBlockChain() {
+	$chain = cacheFetch('block_chain', $success);
+	if($success) {
+		$chain = array_flip($chain);
+	} else $chain = array();
 
-	if(!$s0 || !$s1) {
-		trigger_error('Cannot fetch block metadata for '.$server.' : could not fetch cached blocks.', E_USER_WARNING);
-		return false;
+	$i = $I = intval(trim(bitcoind('getblockcount')));
+	while(true) {
+		$hash = json_decode_safe(bitcoind('getblockbycount '.$i), false);
+		$hash = $hash['hash'];
+
+		if(isset($chain[$i]) && $chain[$i] == $hash) break;
+		$chain[$i] = $hash;
+		if(strcasecmp($hash, GENESIS_BLOCK) == 0) break;
+
+		--$i;
 	}
 
-	$isSane = function($blk) { return isset($blk['hash']); };
-	$old = array_filter($old, $isSane);
-	$recent = array_filter($recent, $isSane);
-
-	$c = count($recent);
-	$d = count($old);
-
-	$cb = function($a, $b) { return $b['when'] - $a['when']; };
-	usort($recent, $cb);
-	usort($old, $cb);
-
-	// Update blocks in the chronological order (oldest blocks first)
-
-	for($i = ($d - 1); $i >= 0; --$i) {
-		if($i < ($d - 1)) {
-			$previous = $old[$i + 1];
-		} else $previous = null;
-
-		updateBlock($old[$i], $previous);
-	}
-
-	for($i = ($c - 1); $i >= 0; --$i) {
-		if($i < ($c - 1)) {
-			$previous = $recent[$i + 1];
-		} else if($d > 0) {
-			$previous = $old[0];
-		} else $previous = null;
-
-		updateBlock($recent[$i], $previous);
-	}
-
-	// Try to move the shares from invalid blocks to the next
-	for($i = ($c - 1); $i >= 1; --$i) {
-		maybeProcessInvalidBlock($recent[$i], $recent[$i - 1]);
-	}
-	for($i = ($d - 1); $i >= 0; --$i) {
-		if($i > 0) $previous = $old[$i - 1];
-		else $previous = $recent[$c - 1];
-		maybeProcessInvalidBlock($old[$i], $previous);
-	}
-
-	$s0 = cacheStore('blocks_old_'.$server, $old);
-	$s1 = cacheStore('blocks_recent_'.$server, $recent);
-
-	if(!$s0 || !$s1) {
-		trigger_error('Cannot store block metadata for '.$server.' : could not store cached blocks.', E_USER_WARNING);
-		return false;
-	}
-
-	return true;
+	return cacheStore('block_chain', array_flip($chain)) ? $I : false;
 }

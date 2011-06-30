@@ -95,7 +95,7 @@ p.msg.message {
 
 div.announcements {
 	border: 2px solid #888800;
-	background-color: #FFFF00;
+	background-color: #FFFF88;
 	padding: 0.5em;
 	clear: right;
 }
@@ -157,16 +157,6 @@ div.hash_progress > div {
 
 table {
 	empty-cells: show;
-}
-
-tr.invalid_blk > td {
-	opacity: 0.6;
-}
-
-tr.invalid_blk, tr.invalid_blk > td {
-        background: url('./img.linethrough.png');
-        background-repeat: repeat-x;
-        background-size: auto 100%;
 }
 
 td[title] > span, span[title] {

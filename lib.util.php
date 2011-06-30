@@ -540,28 +540,18 @@ function prettyBlockStatus($s, $when = null) {
 	if($when !== null && (time() - $when) < FRESH_BLOCK_THRESHOLD) {
 		return '<td class="unconfirmed conf9" title="It is too soon to try to determine the status of this block."><span>???</span></td>';
 	} else if($s === true) {
-		return '<td>Valid</td>';
-	} else if(isset($s) && $s === false) {
-		return '<td>Invalid</td>';
+		return '<td>Confirmed</td>';
 	} else if(is_numeric($s)) {
 		$opacity = (int)floor(10 * $s / NUM_CONFIRMATIONS);
 		if($opacity > 9) $opacity = 9;
 		return '<td class="unconfirmed conf'.$opacity.'" title="'.$s.' confirmations left"><span>'.$s.' left</span></td>';
+	} else if($s === false) {
+		return '<td>Invalid</td>';
 	} else {
 		return '<td class="unconfirmed conf9" title="Unknown status"><span>Unknown</span></td>';
 	}
 }
 
-/**
- * Get the class="" attribute for a block row.
- * @param mixed $s the status of the block.
- * @return string formatted ' class=""' string
- */
-function getRowClassForBlock($s) {
-	if($s === false) {
-		return ' invalid_blk';
-	} else return '';
-}
 
 /**
  * Show an error in the next printed header.
@@ -599,7 +589,7 @@ function getCDF($shares, $difficulty) {
 function sqlQuery($q) {
 	$r = mysql_query($q);
 	if($r === false) {
-		trigger_error("The following query failed : \n$r\n".mysql_error()."\n", E_USER_WARNING);
+		trigger_error("The following query failed : \n$q\n".mysql_error()."\n", E_USER_WARNING);
 	}
 	return $r;
 }
