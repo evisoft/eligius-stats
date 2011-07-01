@@ -55,7 +55,8 @@ $commands = array(
 	'pool_hashrates' => function() use($SERVERS) {
 		$r = true;
 		foreach($SERVERS as $name => $data) {
-			$r = $r && updatePoolHashrate($name);
+			list(, $apiRoot) = $data;
+			$r = $r && updatePoolHashrate($name, $apiRoot);
 		}
 		return $r;
 	},

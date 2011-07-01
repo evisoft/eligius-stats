@@ -72,9 +72,10 @@ if(!isset($_SESSION['tok'])) {
 /**
  * Update the Pool's hashrate.
  * @param string $serverName the name of the server (should coincide with the "server" column in MySQL)
+ * @param string $apiRoot the API root of the server.
  * @return bool true if the operation succeeded.
  */
-function updatePoolHashrate($serverName) {
+function updatePoolHashrate($serverName, $apiRoot) {
 	$end = time() - HASHRATE_LAG;
 	$start = $end - HASHRATE_PERIOD_LONG;
 	$hashrate = sqlQuery("
@@ -86,6 +87,11 @@ function updatePoolHashrate($serverName) {
 	");
 	$hashrate = fetchAssoc($hashrate);
 	$hashrate = $hashrate['hashrate'];
+
+	if($hashrate == 0) {
+		/* Try using the .txt files in case of SQL breakage. This is not ideal at all (the average is too short), but meh */
+		$hashrate = floatval(file_get_contents($apiRoot.'/hashrate.txt'));
+	}
 
 	return updateData(T_HASHRATE_POOL, $serverName, null, $hashrate, TIMESPAN_LONG);
 }
@@ -509,6 +515,7 @@ function updateBlocks($server, $apiRoot) {
 			");
 
 			$bData['shares_total'] = 0;
+			$bData['shares'] = array();
 			while($r = fetchAssoc($q)) {
 				$bData['shares_total'] += $r['fshares'];
 				$bData['shares'][$r['username']] = $r['fshares'];
