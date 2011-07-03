@@ -81,7 +81,7 @@ function updatePoolHashrate($serverName, $apiRoot) {
 	$hashrate = sqlQuery("
 		SELECT ((COUNT(*) * POW(2, 32)) / ".HASHRATE_PERIOD_LONG.") AS hashrate
 		FROM shares
-		WHERE our_result <> 'N'
+		WHERE \"ourResult\" = true
 			AND server = $serverName
 			AND time BETWEEN $start AND $end
 	");
@@ -248,7 +248,7 @@ function updateInstantShareCount($server) {
 				FROM shares
 				WHERE time BETWEEN $start AND $end
 					AND server = $server
-					AND our_result <> 'N'"
+					AND \"ourResult\" = true"
 			);
 			$q = fetchAssoc($q);
 
@@ -262,7 +262,7 @@ function updateInstantShareCount($server) {
 				FROM shares
 				WHERE time BETWEEN ($start + 1) AND $end
 					AND server = $server
-					AND our_result <> 'N'"
+					AND \"ourResult\" = true"
 			);
 			$q = fetchAssoc($q);
 
@@ -277,7 +277,7 @@ function updateInstantShareCount($server) {
 				WHERE time <= $end
 					AND server = $server
 					AND id > $thresholdID
-					AND our_result <> 'N'"
+					AND \"ourResult\" = true"
 			);
 			$q = fetchAssoc($q);
 
@@ -291,7 +291,7 @@ function updateInstantShareCount($server) {
 				FROM shares
 				WHERE time BETWEEN $start AND $end
 					AND server = $server
-					AND our_result <> 'N'"
+					AND \"ourResult\" = true"
 			);
 			$q = fetchAssoc($q);
 
@@ -316,8 +316,9 @@ function updateTopContributors() {
 	$q = sqlQuery("
 		SELECT server, username AS address, ((COUNT(*) * POW(2, 32)) / ".HASHRATE_AVERAGE.") AS hashrate
 		FROM shares
+		LEFT JOIN users ON shares.userId = users.id
 		WHERE time BETWEEN $start AND $end
-			AND our_result <> 'N'
+			AND \"ourResult\" = true
 		GROUP BY username, server
 		ORDER BY hashrate DESC"
 	);
@@ -357,7 +358,7 @@ function updateAverageHashrates() {
 	$isWorking = sqlQuery("
 		SELECT COUNT(*) AS shares
 		FROM shares
-		WHERE our_result <> 'N'
+		WHERE \"ourResult\" = true
 			AND time >= $wStart
 		LIMIT 1
 	");
@@ -374,7 +375,8 @@ function updateAverageHashrates() {
 		$q = sqlQuery("
 			SELECT username AS address, server, COUNT(*) AS shares
 			FROM shares
-			WHERE our_result <> 'N'
+			LEFT JOIN users ON shares.userId = users.id
+			WHERE \"ourResult\" = true
 				AND time BETWEEN $start AND $end
 			GROUP BY server, username
 			ORDER BY time DESC
@@ -389,7 +391,8 @@ function updateAverageHashrates() {
 		$q = sqlQuery("
 			SELECT username AS address, server, COUNT(*) AS shares
 			FROM shares
-			WHERE our_result <> 'N'
+			LEFT JOIN users ON shares.userId = users.id
+			WHERE \"ourResult\" = true
 				AND time BETWEEN $start AND $end
 			GROUP BY server, username
 			ORDER BY time DESC
@@ -404,7 +407,8 @@ function updateAverageHashrates() {
 		$q = sqlQuery("
 			SELECT username AS address, server, COUNT(*) AS shares, reason
 			FROM shares
-			WHERE our_result <> 'Y'
+			LEFT JOIN users ON shares.userId = users.id
+			WHERE \"ourResult\" = false
 				AND time BETWEEN $start AND $end
 			GROUP BY server, username, reason
 			ORDER BY time DESC
@@ -418,7 +422,8 @@ function updateAverageHashrates() {
 		$q = sqlQuery("
 			SELECT username AS address, server, COUNT(*) AS shares, reason
 			FROM shares
-			WHERE our_result <> 'Y'
+			LEFT JOIN users ON shares.userId = users.id
+			WHERE \"ourResult\" = false
 				AND time BETWEEN $start AND $end
 			GROUP BY server, username, reason
 			ORDER BY time DESC
@@ -508,7 +513,8 @@ function updateBlocks($server, $apiRoot) {
 			$q = sqlQuery("
 				SELECT username, COUNT(*) AS fshares
 				FROM shares
-				WHERE our_result <> 'N'
+				LEFT JOIN users ON shares.userId = users.id
+				WHERE \"ourResult\" = true
 					AND server = $server
 					AND time BETWEEN $start AND $end
 				GROUP BY username
@@ -559,7 +565,8 @@ function getIndividualHashrates($serverName) {
 	$q = sqlQuery("
 		SELECT username AS address, ((COUNT(*) * POW(2, 32)) / ".HASHRATE_PERIOD.") AS hashrate
 		FROM shares
-		WHERE our_result <> 'N'
+		LEFT JOIN users ON shares.userId = users.id
+		WHERE \"ourResult\" = true
 			AND server = $serverName
 			AND time BETWEEN $start AND $end
 		GROUP BY username
