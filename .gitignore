@@ -2,5 +2,5 @@ cache/*.cache
 json/*.json
 inc.*.php
 
-canvas-text/
-colorpicker/
+canvas-text
+colorpicker

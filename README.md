@@ -20,11 +20,11 @@ Depedencies
 
 * You must fetch the canvas-text library and place it in the canvas-text folder. One easy way to do that is to run :
 
-svn checkout http://canvas-text.googlecode.com/svn/trunk/ canvas-text
+	svn checkout http://canvas-text.googlecode.com/svn/trunk/ canvas-text
 
 * You must fetch the colorpicker jQuery plugin and place it in the colorpicker folder. The library can be found at :
 
-http://www.eyecon.ro/colorpicker/
+	http://www.eyecon.ro/colorpicker/
 
 Using the cli.update.php script
 ===============================
@@ -37,6 +37,5 @@ Recommended crontab :
 
 	0    * * * * /path/to/cli.update.php pool_hashrates
 	*/15 * * * * /path/to/cli.update.php balances random_addresses individual_hashrates top_contributors
-	*/10 * * * * /path/to/cli.update.php block_metadata
 	*/3  * * * * /path/to/cli.update.php average_hashrates
 	*    * * * * /path/to/cli.update.php pool_status blocks instant_rate
