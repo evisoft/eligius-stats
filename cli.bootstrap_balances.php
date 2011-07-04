@@ -21,6 +21,9 @@ namespace Artefact2\EligiusStats;
 require __DIR__.'/lib.eligius.php';
 require __DIR__.'/inc.servers.php';
 
+$blockChain = cacheFetch('block_chain', $success);
+$now = time();
+
 foreach($SERVERS as $name => $data) {
 	list(,$apiRoot) = $data;
 
@@ -36,6 +39,11 @@ foreach($SERVERS as $name => $data) {
 	foreach($blocks as $block => $foundAt) {
 		$blk = file_get_contents($block);
 		$blk = json_decode($blk, true);
+
+		$hash = pathinfo($block, PATHINFO_FILENAME);
+		if(!preg_match('%^[0-9a-fA-F]{64}$%D', $hash) || ($success && (($now - $foundAt) > FRESH_BLOCK_THRESHOLD) && !isset($blockChain[$hash]))) {
+			continue;
+		}
 
 		foreach($blk as $address => $addressData) {
 			$toCommit[T_BALANCE_UNPAID_REWARD][$address][] = array($foundAt, (isset($addressData['balance']) ? satoshiToBTC($addressData['balance']) : "0.0"));
