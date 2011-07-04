@@ -356,6 +356,12 @@ EligiusUtils.stlBindColorPicker = function(id, name, defaultColor) {
 	}});
 };
 
+EligiusUtils.twitterStuff = function(selector) {
+	$.get("https://search.twitter.com/search.json?q=%23Eligius&from=Artefact2&count=1&callback=?", "", function(data, textStatus, xhr) {
+		$(selector).css('display', 'none').html(data.results[0].text).fadeIn(1000);
+	}, "json");
+}
+
 /* -------------------------------------------------------------------------------------------------------------------*/
 /*
  * Copyright 2010, Google Inc.

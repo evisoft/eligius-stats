@@ -453,6 +453,7 @@ EOT;
 <script type="text/javascript">
 var __clockOffset = $millis - new Date().getTime();
 var __shareDiff = $shareDiff;
+EligiusUtils.twitterStuff("#tw");
 </script>
 
 EOT;
@@ -466,7 +467,7 @@ EOT;
 <title>$title</title>
 </head>
 <body>
-<h1>$shownTitle</h1>
+<h1>$shownTitle <span id="tw"></span></h1>
 
 EOT;
 

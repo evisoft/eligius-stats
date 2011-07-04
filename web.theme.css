@@ -179,3 +179,16 @@ ul.localsettings li {
 	margin-top: 1em;
 	margin-bottom: 1em;
 }
+
+span#tw {
+	font-size: 0.5em;
+	font-weight: normal;
+	vertical-align: middle;
+	padding: 0.2em;
+	padding-left: 0.5em;
+	padding-right: 0.5em;
+	color: #4099FF;
+	border: 1px solid #4099FF;
+	border-radius: 0.8em;
+	margin-left: 2em;
+}
