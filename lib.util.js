@@ -356,6 +356,25 @@ EligiusUtils.stlBindColorPicker = function(id, name, defaultColor) {
 	}});
 };
 
+EligiusUtils.nightMarkings = function(begin, end) {
+	var nights = [];
+
+	var nightStart = -3600000 * 3; /* 9 pm */
+	var nightEnd = 7 * 3600000; /* 7 am */
+
+	var i = begin - (begin % 86400000) - __clockOffset % 86400000;
+	while(i + nightStart < end) {
+		nights.push({ xaxis: {
+			from: (i + nightStart) >= begin ? (i + nightStart) : begin,
+			to: (i + nightEnd) <= end ? (i + nightEnd) : end
+		}});
+
+		i += 86400000;
+	}
+
+	return nights;
+}
+
 EligiusUtils.twitterStuff = function(selector) {
 	$.get("https://search.twitter.com/search.json?q=%23Eligius&from=Artefact2&count=1&callback=?", "", function(data, textStatus, xhr) {
 		$(selector).css('display', 'none').html(data.results[0].text).fadeIn(1000);

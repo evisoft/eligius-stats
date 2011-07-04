@@ -147,7 +147,8 @@ var options = {
 	xaxis: { mode: "time", ticks: 5 },
 	yaxis: { position: "right", tickFormatter: EligiusUtils.format$unit $font },
 	series: { lines: { fill: 0.3, steps: true }, stack: true },
-	selection: { mode: "xy" }
+	selection: { mode: "xy" },
+	grid: { markings: [] }
 };
 
 var cPaid = '#' + (localStorage['a2_alreadypaid'] ? localStorage['a2_alreadypaid'] : '$defPaid');
@@ -173,6 +174,10 @@ $.get("$paidUri", "", function(data, textStatus, xhr) {
 			options.yaxis.min = Math.max(0, options.yaxis.min - (options.yaxis.max - options.yaxis.min) * 0.05);
 			options.yaxis.max = options.yaxis.max + (options.yaxis.max - options.yaxis.min) * 0.10;
 			series.push({ data: data, label: "Current block estimate", color: cCurrent  });
+			options.grid.markings = EligiusUtils.nightMarkings(
+				Math.min(alreadyPaid[0][0], unpaid[0][0], currentEstimate[0][0]),
+				Math.max(alreadyPaid[alreadyPaid.length - 1][0], unpaid[unpaid.length - 1][0], currentEstimate[currentEstimate.length - 1][0])
+			);
 			$.plot($('#eligius_balance'), series, options);
 
 			series.push({ data: EligiusUtils.splitHorizontalLine(EligiusUtils.shiftData(alreadyPaid, 0.33554432)), label: "Payout threshold", color: cThresh, lines: { fill: false }, stack: false });
@@ -299,7 +304,8 @@ var options = {
 	xaxis: { mode: "time", ticks: 5 },
 	yaxis: { position: "right", tickFormatter: EligiusUtils.formatHashrate },
 	series: { lines: { fill: 0.3 } },
-	selection: { mode: "xy" }
+	selection: { mode: "xy" },
+	grid: { markings: [] }
 };
 
 var cHashrate = '#' + (localStorage['a2_hashrate'] ? localStorage['a2_hashrate'] : '$cHashrate');
@@ -310,6 +316,7 @@ $.get("$uri", "", function(data, textStatus, xhr) {
 	series.push({ data: data, label: "Hashrate", color: cHashrate, lines: { lineWidth: 1 } });
 	series.push({ data: EligiusUtils.movingAverage(data, 10800000, $interval), label: "3-hour average", color: cShort, lines: { fill: false } });
 	series.push({ data: EligiusUtils.movingAverage(data, 43200000, $interval), label: "12-hour average", color: cLong, lines: { fill: false } });
+	options.grid.markings = EligiusUtils.nightMarkings(data[0][0], data[data.length - 1][0]);
 	$.plot($('#eligius_indiv_hashrate'), series, options);
 
 	var maxZoomT = 600000;
