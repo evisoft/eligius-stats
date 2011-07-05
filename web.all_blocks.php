@@ -29,9 +29,9 @@ function showBlocks($address = null) {
 	if($address !== null) {
 		echo "<th>Submitted shares</th>";
 	}
-	echo "<th>Total shares</th>";
+	echo "<th>Total shares</th><th title=\"Total amount of BTC the server has to pay rewards, including the generated coins of this block.\"><span>Server funds</span></th><th title=\"BTC spent to pay shares from this round.\"><span>Paid in this block</span></th><th>Reward per share</th>";
 	if($address !== null) {
-		echo "<th>Contribution (%)</th><th>Reward</th>";
+		echo "<th>Reward</th>";
 	}
 
 	echo "<th>Status</th>";
@@ -62,9 +62,9 @@ function showBlocks($address = null) {
 	}
 
 	if(!$success) {
-		echo "<tr><td><small>N/A</small></td><td colspan=\"3\"><small>N/A</small></td><td><small>N/A</small></td><td><small>N/A</small></td>";
+		echo "<tr><td><small>N/A</small></td><td colspan=\"3\"><small>N/A</small></td><td><small>N/A</small></td><td><small>N/A</small></td><td><small>N/A</small></td><td><small>N/A</small></td>";
 		if($address !== null) {
-			echo "<td><small>N/A</small></td><td><small>N/A</small></td><td><small>N/A</small></td>";
+			echo "<td><small>N/A</small></td><td><small>N/A</small></td>";
 		}
 		echo "</tr>\n";
 	} else {
@@ -77,7 +77,7 @@ function showBlocks($address = null) {
 
 			$when = prettyDuration($now - $r['when'], false, 1).' ago';
 			$shares = $r['shares_total'];
-			$block = '<a href="http://blockexplorer.com/block/'.$r['hash'].'" title="'.$hash.'">'.$hash.'</a>';
+			$block = '<a href="http://blockexplorer.com/block/'.$r['hash'].'" title="'.$hash.'">…'.substr($hash, -25).'</a>';
 
 			if(isset($r['duration'])) {
 				list($seconds, $minutes, $hours) = extractTime($r['duration']);
@@ -91,29 +91,33 @@ function showBlocks($address = null) {
 			if($address !== null) {
 				if($r['shares'] === null && $shares > 0) {
 					$myShares = '<small>N/A</small>';
-					$percentage = '<small>N/A</small>';
 				} else {
 					$myShares = isset($r['shares'][$address]) ? $r['shares'][$address] : 0;
-					$percentage = number_format(100 * ($myShares / $shares), 4, '.', ',').' %';
 					$myShares = prettyInt($myShares);
 				}
 				echo "<td class=\"ralign\">$myShares</td>";
 			}
+
+			$funds = (isset($r['metadata']['funds'])) ? prettySatoshis($r['metadata']['funds']) : '<small>N/A</small>';
+			$paid = (isset($r['metadata']['funds'])) ? prettySatoshis($r['metadata']['paid']) : '<small>N/A</small>';
+			$rps = ($shares > 0 && isset($r['metadata']['funds'])) ? prettySatoshis($r['metadata']['paid'] / $shares) : '<small>N/A</small>';
 			$shares = ($shares > 0) ? prettyInt($shares) : '<small>N/A</small>';
+
 			echo "<td class=\"ralign\">$shares</td>";
+			echo "<td class=\"ralign\">$funds</td><td class=\"ralign\">$paid</td><td class=\"ralign\">$rps</td>";
 
 			if($address !== null) {
 				if(isset($r['valid']) && $r['valid'] === false) {
-					$reward = '<td>'.prettyBTC(0).'</td>';
+					$reward = prettyBTC(0);
 				} else {
-					$reward = '<td>'.(isset($r['rewards'][$address]) ? prettyBTC($r['rewards'][$address]) : prettyBTC(0)).'</td>';
+					$reward = (isset($r['rewards'][$address]) ? prettyBTC($r['rewards'][$address]) : prettyBTC(0));
 				}
 
-				echo "<td class=\"ralign\">$percentage</td>$reward";
+				echo "<td class=\"ralign\">$reward</td>";
 			}
 
 			echo prettyBlockStatus($r['valid'], $r['when']);
-			echo "<td class=\"lalign\">$block</td></tr>\n";
+			echo "<td class=\"ralign\">$block</td>";
 		}
 	}
 

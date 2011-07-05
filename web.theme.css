@@ -159,7 +159,7 @@ table {
 	empty-cells: show;
 }
 
-td[title] > span, span[title] {
+td[title] > span, span[title], th[title] > span {
 	border-bottom: 1px dotted black;
 }
 

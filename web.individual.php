@@ -227,7 +227,7 @@ function showRecentPayouts($server, $address) {
 	echo "<h2>Recent blocks and rewards</h2>\n";
 	$now = time();
 
-	echo "<table id=\"rfb_indiv\">\n<thead>\n<tr><th>▼ When</th><th colspan=\"3\">Round duration</th><th>Submitted shares</th><th>Total shares</th><th>Contribution (%)</th><th>Reward</th><th>Status</th><th>Block</th></tr>\n</thead>\n<tbody>\n";
+	echo "<table id=\"rfb_indiv\">\n<thead>\n<tr><th>▼ When</th><th colspan=\"3\">Round duration</th><th>Submitted shares</th><th>Total shares</th><th>Reward per share</th><th>Reward</th><th>Status</th><th>Block</th></tr>\n</thead>\n<tbody>\n";
 
 	$success = true;
 	$recent = cacheFetch('blocks_recent_'.$server, $success);
@@ -243,19 +243,15 @@ function showRecentPayouts($server, $address) {
 
 			$when = prettyDuration($now - $r['when'], false, 1).' ago';
 			$shares = $r['shares_total'];
-			if($shares === null) {
+			if($shares > 0) {
+				$myShares = isset($r['shares'][$address]) ? $r['shares'][$address] : 0;
+				$rps = (isset($r['metadata']['funds'])) ? prettySatoshis($r['metadata']['paid'] / $shares) : '<small>N/A</small>';
+				$shares = prettyInt($shares);
+				$myShares = prettyInt($myShares);
+			} else {
 				$shares = '<small>N/A</small>';
 				$myShares = '<small>N/A</small>';
-				$percentage = '<small>N/A</small>';
-			} else {
-				if($shares == 0) {
-					$shares = $myShares = $percentage = '<small>N/A</small>';
-				} else {
-					$myShares = isset($r['shares'][$address]) ? $r['shares'][$address] : 0;
-					$percentage = number_format(100 * ($myShares / $shares), 4, '.', ',').' %';
-					$shares = prettyInt($shares);
-					$myShares = prettyInt($myShares);
-				}
+				$rps = '<small>N/A</small>';
 			}
 			$block = '<a href="http://blockexplorer.com/block/'.$r['hash'].'" title="'.$hash.'">…'.substr($hash, -25).'</a>';
 
@@ -275,7 +271,7 @@ function showRecentPayouts($server, $address) {
 			}
 
 			$status = prettyBlockStatus($r['valid'], $r['when']);
-			echo "<tr class=\"row$a\"><td>$when</td>$duration<td class=\"ralign\">$myShares</td><td class=\"ralign\">$shares</td><td class=\"ralign\">$percentage</td>$reward$status<td class=\"ralign\">$block</td></tr>\n";
+			echo "<tr class=\"row$a\"><td>$when</td>$duration<td class=\"ralign\">$myShares</td><td class=\"ralign\">$shares</td><td class=\"ralign\">$rps</td>$reward$status<td class=\"ralign\">$block</td></tr>\n";
 		}
 
 		$a = ($a + 1) % 2;

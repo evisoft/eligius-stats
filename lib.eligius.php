@@ -531,6 +531,8 @@ function updateBlocks($server, $apiRoot) {
 			}
 		}
 
+		$bData['metadata'] = $json[''];
+
 		if((time() - $bData['when']) > FRESH_BLOCK_THRESHOLD) {
 			$confirmations = $blockCount - $blockChain[$blk];
 			if($confirmations >= NUM_CONFIRMATIONS) {
