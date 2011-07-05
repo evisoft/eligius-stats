@@ -61,6 +61,8 @@ function showBlocks($address = null) {
 		}
 	}
 
+	usort($recent, function($b, $a) { return $a['when'] - $b['when']; });
+
 	if(!$success) {
 		echo "<tr><td><small>N/A</small></td><td colspan=\"3\"><small>N/A</small></td><td><small>N/A</small></td><td><small>N/A</small></td><td><small>N/A</small></td><td><small>N/A</small></td>";
 		if($address !== null) {
