@@ -443,6 +443,7 @@ function updateAverageHashrates() {
  */
 function updateBlocks($server, $apiRoot) {
 	static $blockChain = null;
+	static $blockCount = null;
 	if($blockChain === null) {
 		if(($blockCount = updateBlockChain()) === false) return false;
 		$blockChain = cacheFetch('block_chain', &$success);
