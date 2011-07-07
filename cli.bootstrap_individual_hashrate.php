@@ -33,20 +33,23 @@ foreach($SERVERS as $name => $data) {
 	$rates = array();
 
 	while($current < $now - INTERVAL) {
-		$start = $current;
-		$end = $current + INTERVAL;
+		$start = sqlTime($current);
+		$end = sqlTime($current + INTERVAL);
 		$hashrates = sqlQuery($q = "
-			SELECT username AS address, ((COUNT(*) * POW(2, 32)) / ".INTERVAL.") AS hashrate
+			SELECT keyhash, ((COUNT(*) * POW(2, 32)) / ".INTERVAL.") AS hashrate
 			FROM shares
-			LEFT JOIN users ON shares.userId = user.id
-			WHERE \"ourResult\" = true
+			LEFT JOIN users ON shares.user_id = users.id
+			WHERE our_result = true
 				AND server = $name
-				AND time BETWEEN $start AND $end
-			GROUP BY address
+				AND time BETWEEN '$start' AND '$end'
+			GROUP BY keyhash
 		");
 
 		$row = array();
 		while($r = fetchAssoc($hashrates)) {
+			$r['address'] = \Bitcoin::hash160ToAddress(bits2hex($r['keyhash']));
+			unset($r['keyhash']);
+
 			$hashrate = $r['hashrate'];
 			$address = $r['address'];
 

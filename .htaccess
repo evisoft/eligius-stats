@@ -6,7 +6,7 @@ RewriteBase /~artefact2
 RewriteRule ^/?(lib|inc|cli)\.(.+)\.php$ web.mainpage.php?dispatch_request [L]
 RewriteRule ^/?$ web.mainpage.php?dispatch_request [L]
 
-RewriteRule ^/?(eu|us|3)/1[a-zA-Z0-9]+(\.htm)?$ web.individual.php [L]
+RewriteRule ^/?(3|5)/1[a-zA-Z0-9]+(\.htm)?$ web.individual.php [L]
 RewriteRule ^/?blocks/(1[a-zA-Z0-9]+)?$ web.all_blocks.php [L]
 RewriteRule ^/?contrib?$ web.rank_list.php [L]
 

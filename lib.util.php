@@ -17,6 +17,8 @@
 
 namespace Artefact2\EligiusStats;
 
+date_default_timezone_set('UTC');
+
 const FRESH_BLOCK_THRESHOLD = 600;
 
 /** The actual true difficulty of a share.
@@ -597,7 +599,7 @@ function sqlConnect() {
 	if($link !== null) return;
 
 	$host = SQL_HOST;
-	$user = SQR_USER;
+	$user = SQL_USER;
 	$pass = SQL_PASSWORD;
 	$db = SQL_DB;
 	$link = pg_connect("host='$host' dbname='$db' user='$user' password='$pass'");
@@ -627,4 +629,72 @@ function sqlQuery() {
  */
 function fetchAssoc($r) {
 	return pg_fetch_assoc($r);
+}
+
+function sqlTime($epoch) {
+	return date('Y-m-d H:i:s', $epoch);
+}
+
+function hex2bits($hex) {
+	if($hex == '') return '';
+
+	static $trans = array(
+		'0' => '0000',
+		'1' => '0001',
+		'2' => '0010',
+		'3' => '0011',
+		'4' => '0100',
+		'5' => '0101',
+		'6' => '0110',
+		'7' => '0111',
+		'8' => '1000',
+		'9' => '1001',
+		'a' => '1010',
+		'b' => '1011',
+		'c' => '1100',
+		'd' => '1101',
+		'e' => '1110',
+		'f' => '1111',
+	);
+
+	$bits = '';
+	$digits = str_split(strtolower($hex), 1);
+
+	foreach($digits as $d) {
+		$bits .= $trans[$d];
+	}
+
+	return $bits;
+}
+
+function bits2hex($bits) {
+	if($bits == '') return '';
+
+	static $trans = array(
+		'0000' => '0',
+		'0001' => '1',
+		'0010' => '2',
+		'0011' => '3',
+		'0100' => '4',
+		'0101' => '5',
+		'0110' => '6',
+		'0111' => '7',
+		'1000' => '8',
+		'1001' => '9',
+		'1010' => 'a',
+		'1011' => 'b',
+		'1100' => 'c',
+		'1101' => 'd',
+		'1110' => 'e',
+		'1111' => 'f',
+	);
+
+	$hex = '';
+	$digits = str_split($bits, 4);
+
+	foreach($digits as $d) {
+		$hex .= $trans[$d];
+	}
+
+	return $hex;
 }

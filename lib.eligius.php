@@ -61,6 +61,7 @@ const GENESIS_BLOCK = '000000000000066cf09f972e4e258916f1f3003a37d208555d3b52754
 
 require __DIR__.'/lib.util.php';
 require __DIR__.'/lib.cache.php';
+require __DIR__.'/lib.bitcoin.php';
 require __DIR__.'/lib.bitcoind.php';
 require __DIR__.'/inc.sql.php';
 
@@ -76,14 +77,14 @@ if(!isset($_SESSION['tok'])) {
  * @return bool true if the operation succeeded.
  */
 function updatePoolHashrate($serverName, $apiRoot) {
-	$end = time() - HASHRATE_LAG;
-	$start = $end - HASHRATE_PERIOD_LONG;
+	$end = sqlTime(time() - HASHRATE_LAG);
+	$start = sqlTime($end - HASHRATE_PERIOD_LONG);
 	$hashrate = sqlQuery("
 		SELECT ((COUNT(*) * POW(2, 32)) / ".HASHRATE_PERIOD_LONG.") AS hashrate
 		FROM shares
-		WHERE \"ourResult\" = true
+		WHERE our_result = true
 			AND server = $serverName
-			AND time BETWEEN $start AND $end
+			AND time BETWEEN '$start' AND '$end'
 	");
 	$hashrate = fetchAssoc($hashrate);
 	$hashrate = $hashrate['hashrate'];
@@ -242,13 +243,14 @@ function updateInstantShareCount($server) {
 
 			$now = time();
 			$end = $now - HASHRATE_LAG;
-			$start = $lastBlockTimestamp ?: "0";
+			$fEnd = sqlTime($end);
+			$start = sqlTime($lastBlockTimestamp ?: "0");
 			$q = sqlQuery("
 				SELECT COUNT(id) AS total, MAX(id) AS lastid
 				FROM shares
-				WHERE time BETWEEN $start AND $end
+				WHERE time BETWEEN '$start' AND '$fEnd'
 					AND server = $server
-					AND \"ourResult\" = true"
+					AND our_result = true"
 			);
 			$q = fetchAssoc($q);
 
@@ -256,13 +258,14 @@ function updateInstantShareCount($server) {
 			$instant[$server]['lastUpdated'] = $now;
 			$instant[$server]['lastID'] = $q['lastid'];
 
-			$start = $end - INSTANT_COUNT_PERIOD;
+			$start = sqlTime($end - INSTANT_COUNT_PERIOD);
+			$interval = INSTANT_COUNT_PERIOD;
 			$q = sqlQuery("
-				SELECT COUNT(id) / ($end - $start) AS rate
+				SELECT COUNT(id) / ($interval) AS rate
 				FROM shares
-				WHERE time BETWEEN ($start + 1) AND $end
+				WHERE time BETWEEN '$start' AND '$fEnd'
 					AND server = $server
-					AND \"ourResult\" = true"
+					AND our_result = true"
 			);
 			$q = fetchAssoc($q);
 
@@ -270,14 +273,15 @@ function updateInstantShareCount($server) {
 		} else {
 			$now = time();
 			$end = $now - HASHRATE_LAG;
+			$fEnd = sqlTime($end);
 			$thresholdID = $instant[$server]['lastID'];
 			$q = sqlQuery("
 				SELECT COUNT(id) AS total, MAX(id) AS lastid
 				FROM shares
-				WHERE time <= $end
+				WHERE time <= '$fEnd'
 					AND server = $server
 					AND id > $thresholdID
-					AND \"ourResult\" = true"
+					AND our_result = true"
 			);
 			$q = fetchAssoc($q);
 
@@ -285,13 +289,13 @@ function updateInstantShareCount($server) {
 			$instant[$server]['lastUpdated'] = $now;
 			if($q['lastid'] > 0) $instant[$server]['lastID'] = $q['lastid'];
 
-			$start = $end - INSTANT_COUNT_PERIOD;
+			$start = sqlTime($end - INSTANT_COUNT_PERIOD);
 			$q = sqlQuery("
 				SELECT COUNT(id) / ($end - $start) AS rate
 				FROM shares
-				WHERE time BETWEEN $start AND $end
+				WHERE time BETWEEN '$start' AND '$fEnd'
 					AND server = $server
-					AND \"ourResult\" = true"
+					AND our_result = true"
 			);
 			$q = fetchAssoc($q);
 
@@ -310,21 +314,24 @@ function updateInstantShareCount($server) {
  * @return bool true if the operation was successful.
  */
 function updateTopContributors() {
-	$end = time() - HASHRATE_LAG;
-	$start = $end - HASHRATE_AVERAGE;
+	$end = sqlTime(time() - HASHRATE_LAG);
+	$start = sqlTime($end - HASHRATE_AVERAGE);
 
 	$q = sqlQuery("
-		SELECT server, username AS address, ((COUNT(*) * POW(2, 32)) / ".HASHRATE_AVERAGE.") AS hashrate
+		SELECT server, keyhash, ((COUNT(*) * POW(2, 32)) / ".HASHRATE_AVERAGE.") AS hashrate
 		FROM shares
-		LEFT JOIN users ON shares.userId = users.id
-		WHERE time BETWEEN $start AND $end
-			AND \"ourResult\" = true
-		GROUP BY username, server
+		LEFT JOIN users ON shares.user_id = users.id
+		WHERE time BETWEEN '$start' AND '$end'
+			AND our_result = true
+		GROUP BY keyhash, server
 		ORDER BY hashrate DESC"
 	);
 
 	$top = array();
 	while($t = fetchAssoc($q)) {
+		if($t['keyhash']) $t['address'] = \Bitcoin::hash160ToAddress(bits2hex($t['keyhash']));
+		else $t['address'] = '(Invalid addresses)';
+		unset($t['keyhash']);
 		$top[] = $t;
 	}
 
@@ -353,13 +360,14 @@ function updateRandomAddress($serverName, $apiRoot) {
  */
 function updateAverageHashrates() {
 	$end = time() - HASHRATE_LAG;
+	$fEnd = sqlTime($end);
 
-	$wStart = time() - HASHRATE_LAG - 60;
+	$wStart = sqlTime(time() - HASHRATE_LAG - 60);
 	$isWorking = sqlQuery("
 		SELECT COUNT(*) AS shares
 		FROM shares
-		WHERE \"ourResult\" = true
-			AND time >= $wStart
+		WHERE our_result = true
+			AND time >= '$wStart'
 		LIMIT 1
 	");
 	$isWorking = fetchAssoc($isWorking);
@@ -371,65 +379,73 @@ function updateAverageHashrates() {
 		$averages3h = array();
 		$averages15min = array();
 
-		$start = $end - HASHRATE_AVERAGE;
+		$start = sqlTime($end - HASHRATE_AVERAGE);
 		$q = sqlQuery("
-			SELECT username AS address, server, COUNT(*) AS shares
+			SELECT keyhash, server, COUNT(*) AS shares
 			FROM shares
-			LEFT JOIN users ON shares.userId = users.id
-			WHERE \"ourResult\" = true
-				AND time BETWEEN $start AND $end
-			GROUP BY server, username
-			ORDER BY time DESC
+			LEFT JOIN users ON shares.user_id = users.id
+			WHERE our_result = true
+				AND time BETWEEN '$start' AND '$fEnd'
+			GROUP BY server, keyhash
 		");
 
 		while($r = fetchAssoc($q)) {
+			$r['address'] = \Bitcoin::hash160ToAddress(bits2hex($r['keyhash']));
+			unset($r['keyhash']);
+
 			$rate = floatval(bcdiv(bcmul($r['shares'], bcpow(2, 32)), HASHRATE_AVERAGE));
 			$averages3h['valid'][$r['server']][$r['address']] = array($r['shares'], $rate);
 		}
 
-		$start = $end - HASHRATE_AVERAGE_SHORT;
+		$start = sqlTime($end - HASHRATE_AVERAGE_SHORT);
 		$q = sqlQuery("
-			SELECT username AS address, server, COUNT(*) AS shares
+			SELECT keyhash, server, COUNT(*) AS shares
 			FROM shares
-			LEFT JOIN users ON shares.userId = users.id
-			WHERE \"ourResult\" = true
-				AND time BETWEEN $start AND $end
-			GROUP BY server, username
-			ORDER BY time DESC
+			LEFT JOIN users ON shares.user_id = users.id
+			WHERE our_result = true
+				AND time BETWEEN '$start' AND '$fEnd'
+			GROUP BY server, keyhash
 		");
 
 		while($r = fetchAssoc($q)) {
+			$r['address'] = \Bitcoin::hash160ToAddress(bits2hex($r['keyhash']));
+			unset($r['keyhash']);
+
 			$rate = floatval(bcdiv(bcmul($r['shares'], bcpow(2, 32)), HASHRATE_AVERAGE_SHORT));
 			$averages15min['valid'][$r['server']][$r['address']] = array($r['shares'], $rate);
 		}
 
-		$start = $end - HASHRATE_AVERAGE;
+		$start = sqlTime($end - HASHRATE_AVERAGE);
 		$q = sqlQuery("
-			SELECT username AS address, server, COUNT(*) AS shares, reason
+			SELECT keyhash, server, COUNT(*) AS shares, reason
 			FROM shares
-			LEFT JOIN users ON shares.userId = users.id
-			WHERE \"ourResult\" = false
-				AND time BETWEEN $start AND $end
-			GROUP BY server, username, reason
-			ORDER BY time DESC
+			LEFT JOIN users ON shares.user_id = users.id
+			WHERE our_result = false
+				AND time BETWEEN '$start' AND '$fEnd'
+			GROUP BY server, keyhash, reason
 		");
 
 		while($r = fetchAssoc($q)) {
+			$r['address'] = \Bitcoin::hash160ToAddress(bits2hex($r['keyhash']));
+			unset($r['keyhash']);
+
 			$averages3h['invalid'][$r['server']][$r['address']][$r['reason']] = $r['shares'];
 		}
 
-		$start = $end - HASHRATE_AVERAGE_SHORT;
+		$start = sqlTime($end - HASHRATE_AVERAGE_SHORT);
 		$q = sqlQuery("
-			SELECT username AS address, server, COUNT(*) AS shares, reason
+			SELECT keyhash, server, COUNT(*) AS shares, reason
 			FROM shares
-			LEFT JOIN users ON shares.userId = users.id
-			WHERE \"ourResult\" = false
-				AND time BETWEEN $start AND $end
-			GROUP BY server, username, reason
-			ORDER BY time DESC
+			LEFT JOIN users ON shares.user_id = users.id
+			WHERE our_result = false
+				AND time BETWEEN '$start' AND '$fEnd'
+			GROUP BY server, keyhash, reason
 		");
 
 		while($r = fetchAssoc($q)) {
+			$r['address'] = \Bitcoin::hash160ToAddress(bits2hex($r['keyhash']));
+			unset($r['keyhash']);
+
 			$averages15min['invalid'][$r['server']][$r['address']][$r['reason']] = $r['shares'];
 		}
 	}
@@ -524,6 +540,9 @@ function updateBlocks($server, $apiRoot) {
 			$bData['shares_total'] = 0;
 			$bData['shares'] = array();
 			while($r = fetchAssoc($q)) {
+				$r['address'] = \Bitcoin::hash160ToAddress(bits2hex($r['keyhash']));
+				unset($r['keyhash']);
+
 				$bData['shares_total'] += $r['fshares'];
 				$bData['shares'][$r['username']] = $r['fshares'];
 			}
@@ -564,19 +583,23 @@ function updateBlocks($server, $apiRoot) {
  */
 function getIndividualHashrates($serverName) {
 	$end = time() - HASHRATE_LAG;
-	$start = $end - HASHRATE_PERIOD;
+	$start = sqlTime($end - HASHRATE_PERIOD);
+	$end = sqlTime($end);
 	$q = sqlQuery("
-		SELECT username AS address, ((COUNT(*) * POW(2, 32)) / ".HASHRATE_PERIOD.") AS hashrate
+		SELECT keyhash, ((COUNT(*) * POW(2, 32)) / ".HASHRATE_PERIOD.") AS hashrate
 		FROM shares
-		LEFT JOIN users ON shares.userId = users.id
-		WHERE \"ourResult\" = true
+		LEFT JOIN users ON shares.user_id = users.id
+		WHERE our_result = true
 			AND server = $serverName
-			AND time BETWEEN $start AND $end
-		GROUP BY username
+			AND time BETWEEN '$start' AND '$end'
+		GROUP BY keyhash
 	");
 
 	$result = array();
 	while($r = fetchAssoc($q)) {
+		$r['address'] = \Bitcoin::hash160ToAddress(bits2hex($r['keyhash']));
+		unset($r['keyhash']);
+
 		$result[$r['address']] = $r['hashrate'];
 	}
 
