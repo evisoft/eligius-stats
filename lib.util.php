@@ -596,21 +596,26 @@ function sqlConnect() {
 	static $link = null;
 	if($link !== null) return;
 
-	$link = mysql_connect(SQL_HOST, SQL_USER, SQL_PASSWORD);
-	mysql_select_db(SQL_DB);
+	$host = SQL_HOST;
+	$user = SQR_USER;
+	$pass = SQL_PASSWORD;
+	$db = SQL_DB;
+	$link = pg_connect("host='$host' dbname='$db' user='$user' password='$pass'");
 }
 
 /**
  * Execute a SQL query.
- * @param string $q the query to execute
  * @return \resource
  */
-function sqlQuery($q) {
+function sqlQuery() {
 	sqlConnect();
 
-	$r = mysql_query($q);
+	$args = func_get_args();
+	$query = array_shift($args);
+
+	$r = pg_query_params($query, $args);
 	if($r === false) {
-		trigger_error("The following query failed : \n$q\n".mysql_error()."\n", E_USER_WARNING);
+		trigger_error("The following query failed : \n$query\n".pg_last_error()."\n", E_USER_WARNING);
 	}
 	return $r;
 }
@@ -621,5 +626,5 @@ function sqlQuery($q) {
  * @return array row of data
  */
 function fetchAssoc($r) {
-	return mysql_fetch_assoc($r);
+	return pg_fetch_assoc($r);
 }

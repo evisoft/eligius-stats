@@ -34,7 +34,7 @@ foreach($SERVERS as $name => $data) {
 		$hashrate = sqlQuery($q = "
 			SELECT ((COUNT(*) * POW(2, 32)) / ".INTERVAL.") AS hashrate
 			FROM shares
-			WHERE our_result <> 'N'
+			WHERE \"ourResult\" = true
 				AND server = $name
 				AND time BETWEEN $start AND $end
 		");

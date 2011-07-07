@@ -38,7 +38,8 @@ foreach($SERVERS as $name => $data) {
 		$hashrates = sqlQuery($q = "
 			SELECT username AS address, ((COUNT(*) * POW(2, 32)) / ".INTERVAL.") AS hashrate
 			FROM shares
-			WHERE our_result <> 'N'
+			LEFT JOIN users ON shares.userId = user.id
+			WHERE \"ourResult\" = true
 				AND server = $name
 				AND time BETWEEN $start AND $end
 			GROUP BY address
