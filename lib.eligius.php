@@ -468,7 +468,7 @@ function updateBlocks($server, $apiRoot) {
 	static $blockChain = null;
 	static $blockCount = null;
 	if($blockChain === null) {
-		if(($blockCount = updateBlockChain()) === false) return false;
+		$blockCount = updateBlockChain();
 		$blockChain = cacheFetch('block_chain', &$success);
 		if(!$success) return false;
 	}
@@ -499,7 +499,7 @@ function updateBlocks($server, $apiRoot) {
 			/* Malformed hash, probably not a block */
 			unset($foundAt[$i]);
 			unset($blocks[$i]);
-		} else if((($now - $foundAt[$i]) > FRESH_BLOCK_THRESHOLD) && !isset($blockChain[$blocks[$i]])) {
+		} else if($blockCount !== false && (($now - $foundAt[$i]) > FRESH_BLOCK_THRESHOLD) && !isset($blockChain[$blocks[$i]])) {
 			/* Invalid block */
 			unset($foundAt[$i]);
 			unset($blocks[$i]);
@@ -561,7 +561,10 @@ function updateBlocks($server, $apiRoot) {
 
 		$bData['metadata'] = $json[''];
 
-		if((time() - $bData['when']) > FRESH_BLOCK_THRESHOLD) {
+		if($blockCount === false) {
+			/* We have no bitcoind, assume everything is ??? */
+			$bData['valid'] = null;
+		} else if((time() - $bData['when']) > FRESH_BLOCK_THRESHOLD) {
 			$confirmations = $blockCount - $blockChain[$blk];
 			if($confirmations >= NUM_CONFIRMATIONS) {
 				$bData['valid'] = true;

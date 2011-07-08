@@ -546,7 +546,9 @@ function prettyInvalidReason($reason) {
  * @return string formatted block status.
  */
 function prettyBlockStatus($s, $when = null) {
-	if($when !== null && (time() - $when) < FRESH_BLOCK_THRESHOLD) {
+	if($s === null) {
+		return '<td class="unconfirmed conf9" title="There is no bitcoin node available at the moment to check the status of this block."><span>???</span></td>';	
+	} else if($when !== null && (time() - $when) < FRESH_BLOCK_THRESHOLD) {
 		return '<td class="unconfirmed conf9" title="It is too soon to try to determine the status of this block."><span>???</span></td>';
 	} else if($s === true) {
 		return '<td>Confirmed</td>';

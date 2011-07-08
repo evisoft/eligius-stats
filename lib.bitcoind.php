@@ -32,7 +32,7 @@ function bitcoind($method, $silentErrors = false, $assumeBitcoind = false) {
 	$args = array_map('escapeshellarg', $args);
 	$method = implode(' ', $args);
 
-	return shell_exec(escapeshellcmd(BITCOIND_BIN).' -datadir='.BITCOIND_DATADIR.' -rpcuser='.BITCOIND_RPCUSER.' -rpcpassword='.BITCOIND_RPCPASSWORD.' '.$method.($silentErrors ? ' 2>&1' : ''));
+	return shell_exec(escapeshellcmd(BITCOIND_BIN).' -datadir='.BITCOIND_DATADIR.' -rpcuser='.BITCOIND_RPCUSER.' -rpcpassword='.BITCOIND_RPCPASSWORD.' -rpcport='.BITCOIND_RPCPORT.' '.$method.($silentErrors ? ' 2>&1' : ''));
 }
 
 /**
