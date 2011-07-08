@@ -291,8 +291,9 @@ function updateInstantShareCount($server) {
 			if($q['lastid'] > 0) $instant[$server]['lastID'] = $q['lastid'];
 
 			$start = sqlTime($end - INSTANT_COUNT_PERIOD);
+			$interval = INSTANT_COUNT_PERIOD;
 			$q = sqlQuery("
-				SELECT COUNT(id) / ($end - $start) AS rate
+				SELECT COUNT(id) / $interval AS rate
 				FROM shares
 				WHERE time BETWEEN '$start' AND '$fEnd'
 					AND server = $server
