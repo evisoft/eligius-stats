@@ -487,14 +487,12 @@ function updateBlocks($server, $apiRoot) {
 	$blocks = array_keys($blocks);
 	$processedBlocks = array();
 
-	foreach($blocks as &$blk) {
-		$blk = pathinfo($blk, PATHINFO_FILENAME);
-	}
-
 	/* Prune invalid blocks */
 	$c = count($blocks);
 	$now = time();
 	for($i = 0; $i < $c; ++$i) {
+		$blocks[$i] = pathinfo($blocks[$i], PATHINFO_FILENAME);
+
 		if(!preg_match('%^[0-9a-fA-F]{64}$%D', $blocks[$i])) {
 			/* Malformed hash, probably not a block */
 			unset($foundAt[$i]);
@@ -519,8 +517,8 @@ function updateBlocks($server, $apiRoot) {
 		$bData['when'] = $foundAt[$i];
 		$bData['duration'] = ($i < ($c - 1)) ? ($foundAt[$i] - $foundAt[$i + 1]) : null;
 
-		$start = ($i < ($c - 1)) ? $foundAt[$i + 1] : 0;
-		$end = $foundAt[$i];
+		$start = sqlTime(($i < ($c - 1)) ? $foundAt[$i + 1] : 0);
+		$end = sqlTime($foundAt[$i]);
 
 		if(isset($sharesCache[$start][$end]) && $sharesCache[$start][$end][0] > 0) {
 			list($total, $shares) = $sharesCache[$start][$end];
@@ -530,19 +528,19 @@ function updateBlocks($server, $apiRoot) {
 			$sharesCache[$start] = array();
 
 			$q = sqlQuery("
-				SELECT username, COUNT(*) AS fshares
+				SELECT keyhash, COUNT(*) AS fshares
 				FROM shares
-				LEFT JOIN users ON shares.userId = users.id
-				WHERE \"ourResult\" = true
+				LEFT JOIN users ON shares.user_id = users.id
+				WHERE our_result = true
 					AND server = $server
-					AND time BETWEEN $start AND $end
-				GROUP BY username
+					AND time BETWEEN '$start' AND '$end'
+				GROUP BY keyhash
 			");
 
 			$bData['shares_total'] = 0;
 			$bData['shares'] = array();
 			while($r = fetchAssoc($q)) {
-				$r['address'] = \Bitcoin::hash160ToAddress(bits2hex($r['keyhash']));
+				$r['username'] = \Bitcoin::hash160ToAddress(bits2hex($r['keyhash']));
 				unset($r['keyhash']);
 
 				$bData['shares_total'] += $r['fshares'];

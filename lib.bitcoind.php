@@ -62,6 +62,7 @@ function requireBitcoind() {
 		'1PEbsG61JK4xbCC2SainpJ3UqgbGheLc9N'
 	) !== false);
 	if(!$hasBitcoind) {
-		die("The present bitcoind does not support the verifymessage command.\n");
+		/* We don't really need it anyway. */
+		//die("The present bitcoind does not support the verifymessage command.\n");
 	}
 }
