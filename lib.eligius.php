@@ -77,8 +77,9 @@ if(!isset($_SESSION['tok'])) {
  * @return bool true if the operation succeeded.
  */
 function updatePoolHashrate($serverName, $apiRoot) {
-	$end = sqlTime(time() - HASHRATE_LAG);
+	$end = time() - HASHRATE_LAG;
 	$start = sqlTime($end - HASHRATE_PERIOD_LONG);
+	$end = sqlTime($end);
 	$hashrate = sqlQuery("
 		SELECT ((COUNT(*) * POW(2, 32)) / ".HASHRATE_PERIOD_LONG.") AS hashrate
 		FROM shares
@@ -314,8 +315,9 @@ function updateInstantShareCount($server) {
  * @return bool true if the operation was successful.
  */
 function updateTopContributors() {
-	$end = sqlTime(time() - HASHRATE_LAG);
+	$end = time() - HASHRATE_LAG;
 	$start = sqlTime($end - HASHRATE_AVERAGE);
+	$end = sqlTime($end);
 
 	$q = sqlQuery("
 		SELECT server, keyhash, ((COUNT(*) * POW(2, 32)) / ".HASHRATE_AVERAGE.") AS hashrate

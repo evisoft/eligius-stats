@@ -29,14 +29,14 @@ foreach($SERVERS as $name => $data) {
 
 	$rates = array();
 	while($current < $now - INTERVAL) {
-		$start = $current;
-		$end = $current + INTERVAL;
+		$start = sqlTime($current);
+		$end = sqlTime($current + INTERVAL);
 		$hashrate = sqlQuery($q = "
 			SELECT ((COUNT(*) * POW(2, 32)) / ".INTERVAL.") AS hashrate
 			FROM shares
-			WHERE \"ourResult\" = true
+			WHERE our_result = true
 				AND server = $name
-				AND time BETWEEN $start AND $end
+				AND time BETWEEN '$start' AND '$end'
 		");
 
 		$hashrate = fetchAssoc($hashrate);
