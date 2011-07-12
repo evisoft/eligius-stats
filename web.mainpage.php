@@ -205,7 +205,7 @@ function showRecentBlocks() {
 			$when = prettyDuration($now - $r['when'], false, 1).' ago';
 			$shares = ($r['shares_total'] > 0) ? prettyInt($r['shares_total']) : '<small>N/A</small>';
 			$server = $SERVERS[$r['server']][0];
-			$block = '<a href="http://blockexplorer.com/block/'.$r['hash'].'" title="'.$hash.'">…'.substr($hash, -25).'</a>';
+			$block = '<a href="http://'.getBE().'/block/'.$r['hash'].'" title="'.$hash.'">…'.substr($hash, -25).'</a>';
 			$status = prettyBlockStatus($r['valid'], $r['when']);
 
 			if(isset($r['duration'])) {

@@ -253,7 +253,7 @@ function showRecentPayouts($server, $address) {
 				$myShares = '<small>N/A</small>';
 				$rps = '<small>N/A</small>';
 			}
-			$block = '<a href="http://blockexplorer.com/block/'.$r['hash'].'" title="'.$hash.'">…'.substr($hash, -25).'</a>';
+			$block = '<a href="http://'.getBE().'/block/'.$r['hash'].'" title="'.$hash.'">…'.substr($hash, -25).'</a>';
 
 			if($address !== null) {
 				if(isset($r['valid']) && $r['valid'] === false) {
@@ -380,6 +380,7 @@ if(!in_array($address, $addresses)) {
 
 EOT;
 } else {
+	echo "<p><a href='http://".getBE()."/address/$address'>See this address on pident &rarr;</a></p>";
 	showBalance($unpaid, $current);
 	showHashrateAverage($server, $address);
 	echo "<h2>Graphs <small>(double-click to undo zoom)</small></h2>\n";

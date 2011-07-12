@@ -310,6 +310,13 @@ function rawSatoshiToBTC($s) {
 }
 
 /**
+ * Get the preffered BlockExplorer-like URI.
+ */
+function getBE() {
+	return ((getPrefferedMonetaryUnit() == 'TBC') ? 'tonal.pident.artefact2.com' : 'pident.artefact2.com');
+}
+
+/**
  * Format a duration in a human-readable way.
  * @param int|float $duration the time, in seconds, to format
  * @param bool $align whether we should align the components.

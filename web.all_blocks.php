@@ -79,7 +79,7 @@ function showBlocks($address = null) {
 
 			$when = prettyDuration($now - $r['when'], false, 1).' ago';
 			$shares = $r['shares_total'];
-			$block = '<a href="http://blockexplorer.com/block/'.$r['hash'].'" title="'.$hash.'">…'.substr($hash, -25).'</a>';
+			$block = '<a href="http://'.getBE().'/block/'.$r['hash'].'" title="'.$hash.'">…'.substr($hash, -25).'</a>';
 
 			if(isset($r['duration'])) {
 				list($seconds, $minutes, $hours) = extractTime($r['duration']);
