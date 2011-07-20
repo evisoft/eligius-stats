@@ -522,9 +522,10 @@ function updateBlocks($server, $apiRoot) {
 		$end = sqlTime($foundAt[$i]);
 
 		if(isset($sharesCache[$start][$end]) && $sharesCache[$start][$end][0] > 0) {
-			list($total, $shares) = $sharesCache[$start][$end];
+			list($total, $shares, $stales) = $sharesCache[$start][$end];
 			$bData['shares_total'] = $total;
 			$bData['shares'] = $shares;
+			$bData['stales'] = $stales;
 		} else {
 			$sharesCache[$start] = array();
 
@@ -547,8 +548,26 @@ function updateBlocks($server, $apiRoot) {
 				$bData['shares_total'] += $r['fshares'];
 				$bData['shares'][$r['username']] = $r['fshares'];
 			}
+			//Stales
+			$q = sqlQuery("
+				SELECT keyhash, COUNT(*) AS fshares
+				FROM shares
+				LEFT JOIN users ON shares.user_id = users.id
+				WHERE our_result = false
+					AND server = $server
+					AND time BETWEEN '$start' AND '$end'
+				GROUP BY keyhash
+			");
 
-			$sharesCache[$start][$end] = array($bData['shares_total'], $bData['shares']);
+			$bData['stales'] = array();
+			while($r = fetchAssoc($q)) {
+				$r['username'] = \Bitcoin::hash160ToAddress(bits2hex($r['keyhash']));
+				unset($r['keyhash']);
+
+				$bData['stales'][$r['username']] = $r['fshares'];
+			}			
+
+			$sharesCache[$start][$end] = array($bData['shares_total'], $bData['shares'], $bData['stales']);
 		}
 
 		$json = json_decode_safe($apiRoot.'/blocks/'.$blk.'.json');
