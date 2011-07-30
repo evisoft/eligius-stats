@@ -98,11 +98,6 @@ function truncateData($type, $identifier) {
  * @return bool true if the operation succeeded.
  */
 function updateDataBulk($type, $identifier, $entries, $maxTimespan = null, $tryRepair = true) {
-	if(count($entries) == 0) {
-		trigger_error('No entries given.', E_USER_NOTICE);
-		return false;
-	}
-
 	$file = __DIR__.'/'.DATA_RELATIVE_ROOT.'/'.$type.'_'.$identifier.DATA_SUFFIX;
 	if(file_exists($file)) {
 		$data = json_decode_safe($file);
@@ -118,7 +113,7 @@ function updateDataBulk($type, $identifier, $entries, $maxTimespan = null, $tryR
 	// Ensure chronological order
 	usort($entries, function($a, $b) { return $a[0] - $b[0]; });
 
-	if($c >= 1 && $data[$c - 1][0] > 1000 * $entries[0][0]) {
+	if(count($entries) >= 1 && $c >= 1 && $data[$c - 1][0] > 1000 * $entries[0][0]) {
 		if($tryRepair) {
 			tryRepairJson($file);
 			return updateDataBulk($type, $identifier, $entries, $maxTimespan, false);
@@ -162,8 +157,11 @@ function updateDataBulk($type, $identifier, $entries, $maxTimespan = null, $tryR
  * @return bool true if the operation succeeded.
  */
 function updateData($type, $identifier, $date = null, $value = null, $maxTimespan = null, $tryRepair = true) {
-	if($date === null) $date = time();
-	$data = array(array($date, $value));
+	if($date === null && $value === null) $data = array();
+	else if($date === null) {
+		$date = time();
+		$data = array(array($date, $value));
+	}
 
 	return updateDataBulk($type, $identifier, $data, $maxTimespan, $tryRepair);
 }

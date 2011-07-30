@@ -99,6 +99,13 @@ function updatePoolHashrate($serverName, $apiRoot) {
 }
 
 /**
+ * Update the hashrate of a legacy pool (just remove old values).
+ */
+function updateLegacyPoolHashrate($serverName) {
+	return updateData(T_HASHRATE_POOL, $serverName, null, null, TIMESPAN_LONG);
+}
+
+/**
  * Update the hashrate data for an address on one server.
  * @param string $serverName the name of the server (should coincide with the "server" column in MySQL)
  * @param string $address the address to process

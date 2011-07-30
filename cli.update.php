@@ -52,11 +52,14 @@ $commands = array(
 		return updateAverageHashrates();
 	},
 
-	'pool_hashrates' => function() use($SERVERS) {
+	'pool_hashrates' => function() use($SERVERS, $LEGACY_SERVERS) {
 		$r = true;
 		foreach($SERVERS as $name => $data) {
 			list(, $apiRoot) = $data;
 			$r = $r && updatePoolHashrate($name, $apiRoot);
+		}
+		foreach($LEGACY_SERVERS as $name => $data) {
+			$r = $r && updateLegacyPoolHashrate($name);
 		}
 		return $r;
 	},
