@@ -472,6 +472,18 @@ EOT;
 
 	echo <<<EOT
 <title>$title</title>
+EOT
+	if (!(isset($_COOKIE['a2_nochat']) && $_COOKIE['a2_nochat']))
+		echo <<<EOT
+<script type="text/javascript" src="https://static.jappix.com/php/get.php?l=en&amp;t=js&amp;g=mini.xml"></script>
+<script type="text/javascript">
+jQuery(document).ready(function() {
+	MINI_GROUPCHATS = ["eligius%chat.freenode.net@irc.jappix.com"];
+	launchMini(false, true, "anonymous.jappix.com");
+});
+</script>
+EOT
+	echo <<<EOT
 </head>
 <body>
 <h1>$shownTitle <span id="tw"></span></h1>

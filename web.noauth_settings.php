@@ -53,6 +53,10 @@ echo "<li>";
 toggleCookie('noanim', 'noanim', 'Enable realtime share count updates', 'Disable realtime share count updates');
 echo " Use this if the instant share count updates are too frequent to your taste.</li>\n";
 
+echo "<li>";
+toggleCookie('nochat', 'nochat', 'Enable integrated chat', 'Disable integrated chat');
+echo " Use this if you don't like the embedded chat applet.</li>\n";
+
 $submit = '<span style="width: 22px; height: 22px; display: inline-block; overflow: hidden; background-image: url(\'./colorpicker/images/colorpicker_submit.png\'); vertical-align: middle;"></span>';
 echo "</ul>\n<hr />\n<p><strong>Note : to save your color changes, click the submit button ($submit) of the appropriate color pickers.</strong></p><ul class=\"localsettings\">\n";
 
