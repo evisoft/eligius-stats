@@ -468,11 +468,10 @@ EOT;
 	if($wColorPicker) echo <<<EOT
 <link rel="stylesheet" media="screen" type="text/css" href="$relativePathToRoot/colorpicker/css/colorpicker.css" />
 <script type="text/javascript" src="$relativePathToRoot/colorpicker/js/colorpicker.js"></script>
+
 EOT;
 
-	echo <<<EOT
-<title>$title</title>
-EOT
+	echo "<title>$title</title>";
 	if (!(isset($_COOKIE['a2_nochat']) && $_COOKIE['a2_nochat']))
 		echo <<<EOT
 <script type="text/javascript" src="https://static.jappix.com/php/get.php?l=en&amp;t=js&amp;g=mini.xml"></script>
@@ -482,7 +481,9 @@ jQuery(document).ready(function() {
 	launchMini(false, true, "anonymous.jappix.com");
 });
 </script>
-EOT
+
+EOT;
+
 	echo <<<EOT
 </head>
 <body>
