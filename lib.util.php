@@ -476,7 +476,7 @@ EOT;
 		echo <<<EOT
 <script type="text/javascript" src="https://static.jappix.com/php/get.php?l=en&amp;t=js&amp;g=mini.xml"></script>
 <script type="text/javascript">
-jQuery(document).ready(function() {
+if ("undefined" != typeof launchMini) jQuery(document).ready(function() {
 	MINI_GROUPCHATS = ["eligius%chat.freenode.net@irc.jappix.com"];
 	launchMini(false, true, "anonymous.jappix.com");
 });
